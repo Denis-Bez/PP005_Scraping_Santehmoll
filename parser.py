@@ -2,6 +2,13 @@
 
 import csv
 
+# Must will deleted
+import time
+import random
+from user_agent import user_agent_data
+import requests
+from bs4 import BeautifulSoup
+
 
 
 # Reading avaible information from got html
@@ -64,7 +71,7 @@ def readwrite():
                     html = requests.get(row['url'], headers=headers)
                     soup = BeautifulSoup(html.text, 'html.parser')
                     items = soup.find('div', class_='content')
-                    return print('Working')
+                    return print(row)
                 except Exception:
                     print(f"Something went wrong. Repeat {i}")
                     time.sleep(i*20)
