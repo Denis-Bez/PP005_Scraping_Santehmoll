@@ -12,8 +12,8 @@ class Product:
     def __init__(self, url):
         # self.id =             # From feed
         # self.name =           # From feed
-        self.url = url          # From feed
-        # self.cleanurl =       # From url
+        # self.url = url        # From feed +
+        # self.cleanurl         # From url  +
         # self.vendor =         # From feed
         # self.vendorCode =     # From feed
         # self.picture =        # From feed
@@ -58,7 +58,7 @@ class Product:
 
         return self.avaible
     
-    def clenurl(self):
+    def getCleanurl(self):
         pass
         
 
