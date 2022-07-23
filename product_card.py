@@ -22,7 +22,6 @@ class Product:
         self.product = product
         self.cleanurl = self.getCleanurl()
         self.__items = self.getSoup()
-        # self.type =           # From site
 
 
 # Getting 'html' and object 'soup' and checking link working and server response. Try 3 times open link
@@ -55,6 +54,7 @@ class Product:
         self.series =  self.getSeries()
         self.price = self.getPrice()
         self.oldprice = self.getOldPrice()
+        self.type = self.getType()
 
 
 # Is Generated dictionary for updating avaible and correcting price
@@ -116,13 +116,18 @@ class Product:
             print("Error reading 'oldprice'")
             oldprice  = "Couldn't scraping oldprice"
         return oldprice
-    
 
+
+# Don't work. Think
     def getType(product):
         type = product['name']
-        type = re.findall(r"(.+)(?= {})".format(product['vendor']), type)
+        type = re.findall(r"(.+)(?= {})".format(product['vendor']), type, re.IGNORECASE)
 
         return type
+
+
+    def adTitle(self, name):
+        re.findall(r"(.+)(?= {})".format(product['vendor']), type, re.IGNORECASE)
 
         
 

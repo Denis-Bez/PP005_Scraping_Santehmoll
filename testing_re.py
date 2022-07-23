@@ -12,17 +12,35 @@ row = {'available': 'true', 'categoryId': 'Мебель для ванной/Ме
 
 row1 = {'available': 'true', 'categoryId': 'Сантехника/Раковины', 'currencyId': 'RUB', 'delivery': 'true', 'description': '', 'id': '210400', 'modified_time': '1654944331', 'name': 'Раковина 53х38 см Bien Dune DNLG05301FD0W3000', 'oldprice': '19660.00', 'pickup': 'true', 'picture': 'https://santehmoll.ru/wa-data/public/shop/products/00/04/210400/images/207954/207954.970.jpg', 'price': '12780.00', 'shop-sku': 'DNLG05301FD0W3000', 'type': '', 'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Fdune_rakovina_na_stoleshnicu_530kh380kh130%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5', 'vendor': 'Bien', 'vendorCode': 'DNLG05301FD0W3000', 'weight': '8.800'}
 
+
+def getType():
+    name = 'Смеситель для раковины 100, однорычажный, со сливным гарнитуром Hansgrohe Talis S 72020000'
+    vendor = 'Hansgrohe'
+    vendorCode = '72020000'
+    series = 'Talis S'
+    
+    # type = re.findall(r"(.+)(?= {})".format(vendor), type, re.IGNORECASE)
+    type = re.sub(r'\s*\b{}\b'.format(vendor), '', name, re.IGNORECASE)
+    type = re.sub(r'\s*\b{}\b'.format(vendorCode), '', type, re.IGNORECASE)
+    type = re.sub(r'\s*\b{}\b'.format(series), '', type, re.IGNORECASE)
+
+    return type
+
 def repl():
+    # type = getType()
+    # print(type)
+
+
 
     with open('all.csv', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
         with open('type.csv', 'a', encoding='utf-8', newline='') as file:
             writer = csv.writer(file, delimiter=';')
-            i = 0
             for row in reader:
-                type = Product.getType(row)[0]
+                type = Product.getType(row)
                 writer.writerow([row['id'], type, row['url']])
-                print(f'Success! - ID: {row["id"]}. Номер: {i}')
+                print(f'Success! - ID: {row["id"]}')
+
 
 if __name__ == "__main__":
     repl()
