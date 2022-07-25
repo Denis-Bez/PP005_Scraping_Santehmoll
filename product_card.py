@@ -2,6 +2,7 @@ import time
 import random
 import re
 from user_agent import user_agent_data
+from titles_library import titles_pattern
 
 import requests
 from bs4 import BeautifulSoup
@@ -94,10 +95,11 @@ class Product:
     def getSeries(self):
         try:
             series = self.__items.find(itemprop='model').get_text(strip=True)
+            return series
         except Exception:
             print("Error reading 'series'")
-            seriess = "Couldn't scraping series"
-        return series
+            return False
+        
     
 
     def getPrice(self):
@@ -112,10 +114,11 @@ class Product:
     def getOldPrice(self):
         try:
             oldprice = self.__items.find('span', class_='p-price__compare-at-price').get_text(strip=True)
+            return oldprice
         except Exception:
             print("Error reading 'oldprice'")
-            oldprice  = "Couldn't scraping oldprice"
-        return oldprice
+            return False
+
 
 
 # Don't work. Think
@@ -126,9 +129,15 @@ class Product:
         return type
 
 
-    def adTitle(self, name):
-        re.findall(r"(.+)(?= {})".format(product['vendor']), type, re.IGNORECASE)
+    def adTitle(product):
+    
+        for title in titles_pattern:
+            result = re.search(r'{}'.format(title), product['name'])
+            # Need do that result is started capital letter
+            if result: 
+                return result.group()        
 
+        return "Type Is not found in library"
         
 
         
