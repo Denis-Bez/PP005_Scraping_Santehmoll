@@ -1,12 +1,16 @@
 import re
 import csv
 from unittest import result
-from product_card import Product
+from Class_product_card import Product
 import time
+from Dictionary_shortName import titles_pattern
 
 
 # title = re.sub(r'\s*\b{}\b'.format(series), '', self.product['name'], re.IGNORECASE)
 # result = re.findall(r'\s*\b{}\b'.format(titles), '', name) 
+
+""" title = re.sub(r'\s*\b{}\b'.format(series), '', self.product['name'], re.IGNORECASE)
+ result = re.findall(r'\s*\b{}\b'.format(titles), '', name) """
 
 row = {'available': 'true', 'categoryId': 'Мебель для ванной/Мебель 40 - 50 см', 'currencyId': 'RUB', 'delivery': 'true', 
                     'description': '', 'id': '225836', 'modified_time': '1657693026', 
@@ -19,14 +23,14 @@ row1 = {'available': 'true', 'categoryId': 'Сантехника/Раковин�
 
 
 def getType():
-    name = 'Смеситель для раковины 100, однорычажный, со сливным гарнитуром Hansgrohe Talis S 72020000'
+    name = 'Коврик Aquanet MA3172L'
     vendor = 'Hansgrohe'
     vendorCode = '72020000'
     series = 'Talis S'
     titles = 'Смеситель для раковины'
     result = False
     
-    for title in titles_layouts:
+    for title in titles_pattern:
         result = re.search(r'{}'.format(title), name)
         if result: 
             return result.group()        
@@ -35,22 +39,22 @@ def getType():
 
 def repl():
 
-    i = 0
-
     #print(getType())
 
 
-    with open('all 200.csv', encoding='utf-8', newline='') as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=';')
-        with open('title.csv', 'a', encoding='utf-8', newline='') as file:
-            writer = csv.writer(file, delimiter=';')
-            for row in reader:
-                i += 1
-                #card_object = Product()
-                ad_title = Product.adTitle(row)
 
-                writer.writerow([row['id'], row['url'], row['name'], ad_title])
-                print(f'Success! - ID: {row["id"]} Numer: {i}')
+    # i = 0
+    # with open('all.csv', encoding='utf-8', newline='') as csvfile:
+    #     reader = csv.DictReader(csvfile, delimiter=';')
+    #     with open('title.csv', 'a', encoding='utf-8', newline='') as file:
+    #         writer = csv.writer(file, delimiter=';')
+    #         for row in reader:
+    #             i += 1
+    #             #card_object = Product()
+    #             ad_title = Product.adTitle(row)
+
+    #             writer.writerow([row['id'], row['url'], row['name'], ad_title])
+    #             print(f'Success! - ID: {row["id"]} Numer: {i}')
 
 
 # Checking string len:
