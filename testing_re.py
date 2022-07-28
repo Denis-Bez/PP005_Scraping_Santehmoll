@@ -40,7 +40,21 @@ def getType():
 def repl():
 
     #print(getType())
+    a =[]
+    
+    
 
+    vendorCode = '45e4'
+    a.append(vendorCode)
+    print(a)
+
+    if (re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 5) or (
+        not re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 7):
+        print('Goo')
+    else:
+        print("Don't do it!")
+
+    
 
 
     # i = 0

@@ -2,8 +2,8 @@ import time
 import random
 import re
 from user_agent import user_agent_data
-from Dictionary_shortName import titles_pattern
-from Dictionary_TextCorrecting import cleaning_url
+from Dictionary_shortName import titles_pattern, correct_shortName_utf8
+from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode
 
 import requests
 from bs4 import BeautifulSoup
@@ -24,6 +24,11 @@ class Product:
         self.product = product
         self.cleanurl = self.getCleanurl()
         self.__items = self.getSoup()
+        self.series = self.getSeries()
+        self.shortName = self.getShortName()
+
+
+# --- Other methods ---
 
 
 # Getting 'html' and object 'soup' and checking link working and server response. Try 3 times open link
@@ -68,25 +73,22 @@ class Product:
                 return False
 
 
-# Is Generated dictionary for updating avaible and correcting price
+    # Is Generated dictionary for updating avaible and correcting price
     def getUpdate(self):
         self.id = self.product['id']
         self.avaible = self.getAvaible()
         self.price = self.getPrice()
         self.oldprice = self.getOldPrice()
+ 
+
+    def addErrorToCSV(self):
+        pass
+        # if not self.__items: enter - "url don't work"
 
 
-# Is being cleared url from partner's id
-    def getCleanurl(self):
-        cleanurl = re.findall(r"&ulp=(.+)(?=%3F)", self.product['url'])[0]    
-
-        for v in cleaning_url:
-            cleanurl = re.sub(v, cleaning_url[v], cleanurl)
-
-        return cleanurl
-
-
-# Getting data for create ads
+# --- Scraping data for create ads ---
+    
+    # Checking avaible of item
     def getAvaible(self):
         try:
             avaible = self.__items.find('div', class_='p-available').get_text(strip=True)
@@ -121,29 +123,83 @@ class Product:
         except Exception:
             print("Error reading 'oldprice'")
             return False
-
-
-    def adTitle(product):
     
+
+    # Is being cleared url from partner's id
+    def getCleanurl(self):
+        cleanurl = re.findall(r"&ulp=(.+)(?=%3F)", self.product['url'])[0]    
+
+        # Replacement reserved url-symbols
+        for v in cleaning_url:
+            cleanurl = re.sub(v, cleaning_url[v], cleanurl)
+
+        return cleanurl
+
+
+    # Getting short product's name
+    def getShortName(self):
+        
+        # Searching short pattern in long name
         for title in titles_pattern:
-            result = re.search(r'{}'.format(title), product['name'])
+            result = re.search(r'{}'.format(title), self.product['name'])
             if result:
-                return result.group().capitalize()       
+                # Checking for non-Cyrillic: 
+                for c in correct_shortName_utf8:
+                    result = re.sub(c, correct_shortName_utf8[c], result)
+                return result.group().capitalize()
 
-        return "Type Is not found in library"
-    
+        return "Product Is not found in 'Dictionary_shortName'"
 
-    def addErrorToCSV(self):
-        pass
-        # if not self.__items: enter - "url don't work"
-    
 
+# --- Ad texts create and validation ---  
+
+    # Return ad's group name
     def nameAdGroup(self):
         try:
             nameAdGroup = '_' + self.product['id'] + '_' + self.product['name']
             return nameAdGroup
         except:
             return "Couldn't extract 'id' or 'name'"
+    
+    # Return a list of key phreses for the ad group
+    def keyPhrases(self):
+        keyPhrases = []
+        self.series
+        self.shortName
+        vendor = self.product['vendor']
+        vendorCode = self.product['vendorCode']
+
+        # Clear from prohibited simbols (for series, vendor and vendorCode)
+        for c in correct_vendor:
+            vendor = re.sub(c, correct_vendor[c], vendor)
+        for c in correct_vendorCode:
+            vendor = re.sub(c, correct_vendorCode[c], vendor)
+
+         
+        #re.sub("\.", "", a)
+        # No more 7 phrases
+
+        
+		# For phrase's algorithm 'Vendor + VendorCode'
+        # Checking length of VendorCode for a separate phrase
+        if (re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 5) or (
+            not re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 7):
+            keyPhrases.append(vendorCode)
+            
+		
+        # For phrase's algorithm 'series + VendorCode'
+        #if self.series:
+            
+		
+        # For phrase's algorithm 'series + VendorCode'
+
+        # For phrase's algorithm  'shortName + vendorCode'
+
+        
+
+        return keyPhrases
+
+
         
 
         

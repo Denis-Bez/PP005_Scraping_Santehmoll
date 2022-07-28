@@ -1,4 +1,4 @@
-# Dictionary fot correcting texts in ads
+# Dictionary for correcting texts in ads
 
 cleaning_url = {
     '%2F':'/', '%3A':':',
@@ -9,3 +9,29 @@ cleaning_url = {
     '%25D0%25BA':'к',
     '%25E2%2584%25961':'№1',
     }
+
+correct_vendor = {
+    "Am.Pm": "Am Pm",
+    "Art&Max": "Art Max",
+    "Black & White": "Black White",
+    "Chilly's Bottles": "Chilly Bottles",
+    "D&K": "DK",
+    "Devon&Devon": "Devon",
+    "E.C.A": "ECA",
+    "G.Lauf": "G Lauf",
+    "M&Z": "MZ",
+    "Olive’S": "Olive",
+    "Villeroy & Boch": "Villeroy Boch",
+}
+
+correct_vendorCode = {
+    "/": "-",
+    ":": "-",
+    "(": "",
+    ")": "",
+    "*": "",
+    ",": "",
+    "+": "-",
+    "_": "-",
+    "#": "-",
+}
