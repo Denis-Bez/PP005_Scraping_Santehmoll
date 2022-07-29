@@ -22,38 +22,33 @@ row = {'available': 'true', 'categoryId': 'Мебель для ванной/Ме
 row1 = {'available': 'true', 'categoryId': 'Сантехника/Раковины', 'currencyId': 'RUB', 'delivery': 'true', 'description': '', 'id': '210400', 'modified_time': '1654944331', 'name': 'Раковина 53х38 см Bien Dune DNLG05301FD0W3000', 'oldprice': '19660.00', 'pickup': 'true', 'picture': 'https://santehmoll.ru/wa-data/public/shop/products/00/04/210400/images/207954/207954.970.jpg', 'price': '12780.00', 'shop-sku': 'DNLG05301FD0W3000', 'type': '', 'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Fdune_rakovina_na_stoleshnicu_530kh380kh130%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5', 'vendor': 'Bien', 'vendorCode': 'DNLG05301FD0W3000', 'weight': '8.800'}
 
 
-def getType():
-    name = 'Коврик Aquanet MA3172L'
-    vendor = 'Hansgrohe'
-    vendorCode = '72020000'
-    series = 'Talis S'
-    titles = 'Смеситель для раковины'
-    result = False
+def getType(pe):
+    for ip, p in enumerate(pe):    
+        # Cheking sum words in phrase (delete '.' or '-' if it more)
+        if len(re.findall(r'\w+', p)) > 7:
+            p = re.sub('\.', "", p)
+            pe[ip] = p
+            if len(re.findall(r'\w+', p)) > 7:
+                p = re.sub('-', "", p)
+                pe[ip] = p
+                if len(re.findall(r'\w+', p)) > 7:
+                    return 'Error! Phrase has more 7 words'
     
-    for title in titles_pattern:
-        result = re.search(r'{}'.format(title), name)
-        if result: 
-            return result.group()        
-
-    return "No title in library"
+    return pe
+        
 
 def repl():
 
-    #print(getType())
-    a =[]
+    # print(getType(p))
+
+    i = 0 
+    with open('all 50.csv', encoding='utf-8', newline='') as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=';')
+        for row in reader:
+            i += 1
+            card_object = Product(row)
+            print(f'Number: {i}, Data: {card_object.header_main()}')
     
-    
-
-    vendorCode = '45e4'
-    a.append(vendorCode)
-    print(a)
-
-    if (re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 5) or (
-        not re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 7):
-        print('Goo')
-    else:
-        print("Don't do it!")
-
     
 
 
