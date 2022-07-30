@@ -2,8 +2,10 @@ import re
 import csv
 from unittest import result
 from Class_product_card import Product
+from Class_API_Yandex import API_Requests
 import time
 from Dictionary_shortName import titles_pattern
+from Dictionary_TextCorrecting import correct_Text
 
 
 # title = re.sub(r'\s*\b{}\b'.format(series), '', self.product['name'], re.IGNORECASE)
@@ -22,59 +24,52 @@ row = {'available': 'true', 'categoryId': 'Мебель для ванной/Ме
 row1 = {'available': 'true', 'categoryId': 'Сантехника/Раковины', 'currencyId': 'RUB', 'delivery': 'true', 'description': '', 'id': '210400', 'modified_time': '1654944331', 'name': 'Раковина 53х38 см Bien Dune DNLG05301FD0W3000', 'oldprice': '19660.00', 'pickup': 'true', 'picture': 'https://santehmoll.ru/wa-data/public/shop/products/00/04/210400/images/207954/207954.970.jpg', 'price': '12780.00', 'shop-sku': 'DNLG05301FD0W3000', 'type': '', 'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Fdune_rakovina_na_stoleshnicu_530kh380kh130%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5', 'vendor': 'Bien', 'vendorCode': 'DNLG05301FD0W3000', 'weight': '8.800'}
 
 
-def getType(pe):
-    for ip, p in enumerate(pe):    
-        # Cheking sum words in phrase (delete '.' or '-' if it more)
-        if len(re.findall(r'\w+', p)) > 7:
-            p = re.sub('\.', "", p)
-            pe[ip] = p
-            if len(re.findall(r'\w+', p)) > 7:
-                p = re.sub('-', "", p)
-                pe[ip] = p
-                if len(re.findall(r'\w+', p)) > 7:
-                    return 'Error! Phrase has more 7 words'
-    
-    return pe
+def getType():
+    pass
         
 
 def repl():
 
-    # print(getType(p))
+    all_data = {
+'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Fagger_exact_a2121100_odnozakhvatnyy_smesitel_dlya_vanny_dusha_s_dlinnym_povorotnym_izlivom_350_mm_ker%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5',
+'clearurl': 'https://santehmoll.ru/product/agger_exact_a2121100_odnozakhvatnyy_smesitel_dlya_vanny_dusha_s_dlinnym_povorotnym_izlivom_350_mm_ker/',
+'name': 'Смеситель для ванны Agger Exact A2121100',
+'shortname': 'Смеситель для ванны',
+'id': '215841',
+'vendor': 'Agger',
+'vendorCode': 'A2121100',
+'price': '5090',
+'oldprice': '7090',
+'picture': 'https://santehmoll.ru/wa-data/public/shop/products/41/58/215841/images/221567/221567.970.jpg',
+'serie': 'Exact',
+'avaible': 'В наличии',
+'groupName': '_215841_Смеситель для ванны Agger Exact A2121100',
+'keyPhrases': ['Agger A2121100', 'A2121100', 'Exact A2121100', 'Смеситель для ванны A2121100'],
+'mainTitle': ['Смеситель для ванны Exact A2121100', 'Смеситель для ванны Agger A2121100'],
+'subTitle': ['В Наличии. Доставка', 'Быстрая доставка. В Наличии'],
+'text': ['Смеситель для ванны Agger Exact A2121100', 'Смеситель для ванны Agger Exact A2121100'],
+'suburl': '#Agger#'
+}
 
-    i = 0 
-    with open('all 50.csv', encoding='utf-8', newline='') as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=';')
-        for row in reader:
-            i += 1
-            card_object = Product(row)
-            print(f'Number: {i}, Data: {card_object.header_main()}')
-    
-    
+    API_Req = API_Requests(all_data)
+    print(API_Req.dictionry_regions('Россия'))
 
+            
 
-    # i = 0
-    # with open('all.csv', encoding='utf-8', newline='') as csvfile:
+    # i = 0 
+    # with open('all 50.csv', encoding='utf-8', newline='') as csvfile:
     #     reader = csv.DictReader(csvfile, delimiter=';')
-    #     with open('title.csv', 'a', encoding='utf-8', newline='') as file:
-    #         writer = csv.writer(file, delimiter=';')
-    #         for row in reader:
-    #             i += 1
-    #             #card_object = Product()
-    #             ad_title = Product.adTitle(row)
+    #     for row in reader:
+    #         i += 1
+    #         if i > 2:
+    #             return
+    #         card_object = Product(row)
+    #         print(f'Number: {i}, Data: {card_object.DataForNewAd()}')
+    
+    
 
-    #             writer.writerow([row['id'], row['url'], row['name'], ad_title])
-    #             print(f'Success! - ID: {row["id"]} Numer: {i}')
 
 
-# Checking string len:
-                #     if len_title > 56:
-                #     correct_marker = 'Too long'
-                # elif len_title <= 56:
-                #     correct_marker = 'Accepted'
-                # elif len_title < 56*0.33:
-                #     correct_marker = 'Too short'
-                # else:
-                #     correct_marker = 'Error len defenition'
 
 
 if __name__ == "__main__":

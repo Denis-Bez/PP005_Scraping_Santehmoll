@@ -1,10 +1,11 @@
-from itertools import product
 import time
 import random
 import re
+import csv
+
 from user_agent import user_agent_data
 from Dictionary_shortName import titles_pattern, correct_shortName_utf8
-from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode
+from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text
 
 import requests
 from bs4 import BeautifulSoup
@@ -15,28 +16,22 @@ class Product:
 
     
     def __init__(self, product):
-        # self.product = {'available': 'true', 'categoryId': 'Мебель для ванной/Мебель 40 - 50 см', 'currencyId': 'RUB', 'delivery': 'true', 
-        #             'description': '', 'id': '225836', 'modified_time': '1657693026', 
-        #             'name': 'Тумба белый глянец/ясень шимо 44,7 см Акватон Вита 1A221401VTD70', 'oldprice': '', 'pickup': 'true', 
-        #             'picture': 'https://santehmoll.ru/wa-data/public/shop/products/36/58/225836/images/386839/386839.970.jpg', 
-        #             'price': '7510.00', 'shop-sku': '1A221401VTD70', 'type': '', 
-        #             'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2F1a221401vtd70%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5', 
-        #             'vendor': 'Акватон', 'vendorCode': '1A221401VTD70', 'weight': '9.680'}
         self.product = product
         self.cleanurl = self.getCleanurl()
         self.__items = self.getSoup()
         self.series = self.getSeries()
         self.shortName = self.getShortName()
+        self.vendor = product['vendor']
 
-        # Clear from prohibited simbols
+        # Clear 'vendor' from prohibited simbols
         for v in correct_vendor:
-            self.vendor = re.sub(v, correct_vendor[v], product['vendor'])
+            self.vendor = re.sub(v, correct_vendor[v], self.vendor)
 
 
 # --- Different methods ---
 
 
-# Getting 'html' and object 'soup' and checking link working and server response. Try 3 times open link
+    # Getting 'html' and object 'soup' and checking link working and server response. Try 3 times open link
     def getSoup(self):        
         for i in range(1, 4):
             try:
@@ -53,42 +48,63 @@ class Product:
         return False
 
 
-# Is Generated and return dictionary with all necessay data for creating ads
-# DRY!!!! Don't forgot example all_data = {self.getUpdate(), self.id ...}
-    def forCreateNewAd(self):
-        self.id = self.product['id']
-        self.name = self.product['name']
-        self.url = self.product['url']
-        self.vendor = self.product['vendor']
-        self.vendorCode = self.product['vendorCode']
-        self.picture = self.product['picture']
-        self.avaible = self.getAvaible()
-        self.series =  self.getSeries()
-        self.price = self.getPrice()
-        self.oldprice = self.getOldPrice()
-        self.type = self.getType()
+    # Is Generated and return dictionary with all necessay data for creating ads
+    def DataForNewAd(self):
+        self.all_data = {
+            'url': self.product['url'],
+            'clearurl': self.cleanurl,
+            'name': self.product['name'],
+            'shortname': self.shortName,
+            'id': self.product['id'],
+            'vendor': self.vendor,
+            'vendorCode': self.product['vendorCode'],
+            'price': self.getPrice(),
+            'oldprice': self.getOldPrice(),
+            'picture': self.product['picture'],
+            'serie': self.series,
+            'avaible': self.getAvaible(),
 
-        GroupName = self.nameAdGroup()
-    
-        all_data = {}
+            'groupName': self.nameAdGroup(),
+            'keyPhrases': self.keyPhrases(),
+            'mainTitle': self.header_main(),
+            'subTitle': ['В Наличии. Доставка', 'Быстрая доставка. В Наличии'],
+            'text': self.ad_Text(),
+            'suburl': self.Suburl(),
+        }
 
         for a in all_data:
             if re.search(r'{Error!}', all_data[a]):
                 self.addErrorToCSV()
                 return False
-
-
-    # Is Generated dictionary for updating avaible and correcting price
-    def getUpdate(self):
-        self.id = self.product['id']
-        self.avaible = self.getAvaible()
-        self.price = self.getPrice()
-        self.oldprice = self.getOldPrice()
+        
+        return self.all_data
  
 
+    # Create Error log csv file for correction
     def addErrorToCSV(self, needtosendsomething=0):
-        pass
         # if not self.__items: enter - "url don't work"
+
+        # Create table for 'Error log'. If table headers don't exist they will created
+        # !!!!Not good design. Think!
+        try:
+            with open('Log_Errors.csv', encoding='utf-8', newline='') as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=';')
+            with open('Log_Errors.csv', 'a', newline='') as file:
+                table_value = []
+                writer = csv.writer(file, delimiter=';')
+                for i in self.all_data:
+                    table_value.append(self.all_data[i])
+                writer.writerow(table_value)
+        except:
+            with open('Log_Errors.csv', 'a', newline='') as file:
+                table_title = []
+                table_value = []
+                writer = csv.writer(file, delimiter=';')
+                for i in self.all_data:
+                    table_title.append(i)
+                    table_value.append(self.all_data[i])
+                writer.writerow(table_title)
+                writer.writerow(table_value)
 
 
 # --- Scraping data for create ads ---
@@ -98,7 +114,6 @@ class Product:
         try:
             avaible = self.__items.find('div', class_='p-available').get_text(strip=True)
         except Exception:
-            print("Error reading 'p-available'")
             avaible = "Error! Couldn't scraping avaible"
         return avaible
     
@@ -109,7 +124,6 @@ class Product:
             series = self.__items.find(itemprop='model').get_text(strip=True)
             return series
         except Exception:
-            print("Series don't exist")
             return "Don't exist Series"
 
 
@@ -118,18 +132,16 @@ class Product:
         try:
             price = self.__items.find(itemprop='price').get_text(strip=True)
         except Exception:
-            print("Error! Don't reading 'price'")
             price = "Error! Don't reading 'price'"
-        return price
+        return self.getClear_price(price)
 
 
     # Getting past product price (optional)
     def getOldPrice(self):
         try:
             oldprice = self.__items.find('span', class_='p-price__compare-at-price').get_text(strip=True)
-            return oldprice
+            return self.getClear_price(oldprice)
         except Exception:
-            print("Don't exist 'oldprice'")
             return "Don't exist 'oldprice'"
     
 
@@ -161,6 +173,14 @@ class Product:
                 return result.capitalize()
 
         return "Error! Product Is not found in 'Dictionary_shortName'"
+    
+
+    # Clean 'price' and 'oldprice' from ' ' and '₽'
+    def getClear_price(self, price):
+        for i in [' ', '₽']:
+            price = re.sub(i, '', price)
+        
+        return price
 
 
 # --- Ad texts create and validation ---  
@@ -179,7 +199,7 @@ class Product:
         keyPhrases = []
         vendorCode = self.product['vendorCode']
 
-        # Clear from prohibited simbols (for series?, vendor and vendorCode)
+        # vendorCode is being Cleaned from prohibited symbols
         for v in correct_vendorCode:
             vendorCode = re.sub(f'\{v}', correct_vendorCode[v], vendorCode)
         
@@ -187,7 +207,7 @@ class Product:
         # For phrase's algorithm 'Vendor + VendorCode'
         keyPhrases.append(self.vendor + ' ' + vendorCode)
         
-        # !It 'if' not good design. Need to thonk
+        # !It 'if' isn't good design. Need to thonk
 		# For phrase's algorithm 'VendorCode'. Checking length of VendorCode for a separate phrase
         if (re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 5) or (
             not re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 7):
@@ -200,15 +220,13 @@ class Product:
         # For phrase's algorithm  'shortName + vendorCode'
         keyPhrases.append(self.shortName + ' ' + vendorCode)
 
-        # Cheking sum words in phrase (deleting '.' or '-' if it more)
-        for iphrase, phrase in enumerate(keyPhrases):    
-            if len(re.findall(r'\w+', phrase )) > 7:
-                phrase = re.sub('\.', "", phrase )
-                keyPhrases[iphrase ] = phrase
-                if len(re.findall(r'\w+', phrase)) > 7:
-                    phrase  = re.sub('-', "", phrase )
-                    keyPhrases[iphrase] = phrase
-                    if len(re.findall(r'\w+', phrase )) > 7:
+        # Cheking sum words in phrase
+        for phrase in enumerate(keyPhrases):    
+            if len(re.findall(r'\w+', phrase[1])) > 7:
+                keyPhrases[phrase[0]] = re.sub('\.', "", keyPhrases[phrase[0]]) # Replace '.' to '' in phrase
+                if len(re.findall(r'\w+', keyPhrases[phrase[0]])) > 7:
+                    keyPhrases[phrase[0]]  = re.sub('-', "", keyPhrases[phrase[0]]) # Replace '-' to '' in phrase
+                    if len(re.findall(r'\w+', keyPhrases[phrase[0]])) > 7:
                         return 'Error! Phrase has more 7 words'
 
         return keyPhrases
@@ -242,11 +260,39 @@ class Product:
         return main_headers
 
 
-    # Generate two versions of subtitles ('series' and 'vendor')
-    def subtitle(self):
-        pass
+    # Create two versions ad's text (product['name'] and 'shortName + vendor + serie + vendorCode')
+    def ad_Text(self):
+        ad_text = []
+        product_name1 = self.product['name']
+        
+        # 'name' is being Cleaned from prohibited simbols
+        for t in correct_Text:
+            product_name1 = re.sub(f'\{t}', correct_Text[t], product_name1)
+        
+        if re.search(r"Don't", self.series):
+            product_name2 = self.shortName + " " + self.vendor + " " + self.product['vendorCode']
+        else:
+            product_name2 = self.shortName + " " + self.vendor + " " + self.series + " " + self.product['vendorCode']
+
+        ad_text.extend([product_name1, product_name2])
+
+        # Checking leigh of ad's text (max 81 symbols)
+        for i, t in enumerate(ad_text):
+            if len(ad_text[i]) > 81:
+                ad_text[i] = re.sub(f' {self.series}', "", ad_text[i]) # Deleted 'serie' from text
+                if len(ad_text[i]) > 81:
+                    ad_text[i] = re.sub(f' {self.vendor}', "", ad_text[i]) # Deleted 'vendor' from text
+                    if len(ad_text[i]) > 81:
+                        return "Error! Ad's text is too long"
+        
+        return ad_text
 
 
-    # if text to long deleted series or vendor or vendorCode
-    def text(self):
-        pass
+    # Create suburl
+    def Suburl(self):
+        suburl = re.sub(' ', '-', self.vendor)
+        if len(suburl) > 20:
+            suburl = 'В-Наличии'
+
+        return '#' + suburl + '#'
+
