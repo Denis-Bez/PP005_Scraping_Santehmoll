@@ -30,7 +30,7 @@ def getType():
 
 def repl():
 
-    all_data = {
+    adTexts = {
 'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Fagger_exact_a2121100_odnozakhvatnyy_smesitel_dlya_vanny_dusha_s_dlinnym_povorotnym_izlivom_350_mm_ker%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5',
 'clearurl': 'https://santehmoll.ru/product/agger_exact_a2121100_odnozakhvatnyy_smesitel_dlya_vanny_dusha_s_dlinnym_povorotnym_izlivom_350_mm_ker/',
 'name': 'Смеситель для ванны Agger Exact A2121100',
@@ -51,8 +51,24 @@ def repl():
 'suburl': '#Agger#'
 }
 
-    API_Req = API_Requests(all_data)
-    print(API_Req.dictionry_regions('Россия'))
+    # API_Req = API_Requests(all_data)
+    # print(API_Req.dictionry_regions('Россия'))
+    a = "Don't get it"
+
+    b = {
+        "Key1": {
+            "Key1-1": "Yep",
+        },
+    }
+
+    if re.search(r"Don't", a):
+        b["Key1"]["Key1-2"] = 'Two'
+
+    print(b)
+    
+
+
+    
 
             
 

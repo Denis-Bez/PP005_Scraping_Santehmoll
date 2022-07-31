@@ -17,6 +17,9 @@ class API_Requests:
                             'campaignsURL': 'https://api.direct.yandex.com/json/v5/campaigns/',
                             'adgroupsURL':  'https://api.direct.yandex.com/json/v5/adgroups',
                             'dictionaries': 'https://api.direct.yandex.com/json/v5/dictionaries',
+                            'vcard': 'https://api.direct.yandex.com/json/v5/vcards',
+                            'adimages': 'https://api.direct.yandex.com/json/v5/adimages',
+                            'sitelinks': 'https://api.direct.yandex.com/json/v5/sitelinks',
                             }
         
         self.adTexts = adTexts
@@ -67,7 +70,7 @@ class API_Requests:
         return self.Send_Request(body, self.__serviceURL['campaignsURL'])
 
 
-    # Create new ad Group
+    # Create new ad Group and ads in Group
     def add_adGroup(self):
         method = 'add'
         params = {
@@ -76,18 +79,59 @@ class API_Requests:
                     "CampaignId": CampaignId,
                     "RegionIds": ["225"],
                 }]
+        }
+
+        body = self.create_Body(method, params)
+        #groupId = self.Send_Request(body, self.__serviceURL['adgroupsURL'])
+        #!!!Need to get Group id to created ads
+        return self.add_Ads(groupId)
+
+
+    # Create new 3 ads (input: id adgroup)
+    def add_Ads(self, groupId):
+        method = 'add'
+        for i in range(0, 3):
+            params = {
+                "Ads": [{
+                    "AdGroupId": groupId,
+                    "TextAd": {
+                        "Title": self.adTexts['mainTitle'][i],
+                        "Title2": self.adTexts['subTitle'][i],
+                        "Text": self.adTexts['text'][i],
+                        "Href": self.adTexts['url'],
+                        "Mobile": "NO", # Need to change to create mobile ads
+                        "DisplayUrlPath":self.adTexts['suburl'],
+                        #"AdImageHash": , # ???????
+                        #"SitelinkSetId": (long), # ?????????
+                        #"AdExtensionIds": [(long), ... ], # ?????????
+                        "PriceExtension": {
+                            "Price": self.adTexts['price']*1000000,
+                            # "OldPrice": 0, # Invite if exist
+                            "PriceCurrency": "RUB",
+                        },
+                    },
+                }]
+            }        
+            body = self.create_Body(method, params)
+            return self.Send_Request(body, self.__serviceURL['campaignsURL'])
+
+
+    # Invite Keywords in ad's group (input: id adgroup)
+    def add_Keywords(self, groupId):
+        pass
+
+
+    # Create vCard. Start to get vCard id and save it in 
+    def add_vCard(self):
+        method = 'add'
+
+        params = {
 
         }
 
         body = self.create_Body(method, params)
-        #id = self.Send_Request(body, self.__serviceURL['adgroupsURL'])
-        #!!!Need to get Group id to created ads
-        return self.add_Ads(id)
+        return self.Send_Request(body, self.__serviceURL['vcard'])
 
-
-    # Create new 3 ads (input: id adgroup)
-    def add_Ads(self, id):
-        pass
 
     # Delete Campaign by 'id'
     def deleteCampaign(self, CampaignId):
