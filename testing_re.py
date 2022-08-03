@@ -51,24 +51,31 @@ def repl():
 'suburl': '#Agger#'
 }
 
-    # API_Req = API_Requests(all_data)
-    # print(API_Req.dictionry_regions('Россия'))
-    a = "Don't get it"
-
-    b = {
-        "Key1": {
-            "Key1-1": "Yep",
-        },
-    }
-
-    if re.search(r"Don't", a):
-        b["Key1"]["Key1-2"] = 'Two'
-
-    print(b)
+    # code_text = RequestResult['error']['error_detail']
     
+    # API_Req = API_Requests(adTexts)
+    # response = API_Req.balance_Points()
+    # print(response)
+
+    # a = "Don't get it"
+
+    # b = {
+    #     "Key1": {
+    #         "Key1-1": "Yep",
+    #     },
+    # }
+
+    # if re.search(r"Don't", a):
+    #     b["Key1"]["Key1-2"] = 'Two'
 
 
-    
+    params = {"Keywords": []}
+    print(params)
+
+    params["Keywords"].append({"Keyword": "key", "AdGroupId": "adGroupId", "Bid": "10000000",})
+    params["Keywords"].append({"Keyword": "key", "AdGroupId": "adGroupId", "Bid": "100000ewrwr00",})
+
+    print(params)
 
             
 

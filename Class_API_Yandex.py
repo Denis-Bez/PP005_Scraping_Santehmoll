@@ -1,6 +1,7 @@
 import requests, json
 from config import CONFIG
 
+
 CampaignId = '76829270'
 
 # !!! Need to create comfortable Dictionary with setting
@@ -20,6 +21,8 @@ class API_Requests:
                             'vcard': 'https://api.direct.yandex.com/json/v5/vcards',
                             'adimages': 'https://api.direct.yandex.com/json/v5/adimages',
                             'sitelinks': 'https://api.direct.yandex.com/json/v5/sitelinks',
+                            'adextensions': 'https://api.direct.yandex.com/json/v5/adextensions',
+                            'keywords': 'https://api.direct.yandex.com/json/v5/keywords',
                             }
         
         self.adTexts = adTexts
@@ -101,7 +104,6 @@ class API_Requests:
                         "Href": self.adTexts['url'],
                         "Mobile": "NO", # Need to change to create mobile ads
                         "DisplayUrlPath":self.adTexts['suburl'],
-                        #"AdImageHash": , # ???????
                         #"SitelinkSetId": (long), # ?????????
                         #"AdExtensionIds": [(long), ... ], # ?????????
                         "PriceExtension": {
@@ -117,31 +119,85 @@ class API_Requests:
 
 
     # Invite Keywords in ad's group (input: id adgroup)
-    def add_Keywords(self, groupId):
-        pass
+    def add_Keywords(self, adGroupId):
+        method = 'add'
+
+        params = {"Keywords": []}
+        
+        for key in self.adTexts['keyPhrases']:
+            params["Keywords"].append({"Keyword": key, "AdGroupId": adGroupId, "Bid": "10000000",})
+        
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['keywords'])
 
 
-    # Create vCard. Start to get vCard id and save it in 
-    def add_vCard(self):
+    # Create vCard. Start to get vCard id and save it in
+    def add_vCard(self, CampaignId):
         method = 'add'
 
         params = {
-
+            "VCards": [{
+                "CampaignId": CampaignId,  # Need to connect with create compaign
+                "Country": "Россия",
+                "City": "Москва",
+                "CompanyName": "Магазин сантехники СантехМолл",
+                "WorkTime": "0;6;09;0;22;0",
+                "Phone": {
+                    "CountryCode": "8",
+                    "CityCode": "800",
+                    "PhoneNumber": "333-00-48",
+                },
+                "Street": "Рязанский пр-т",
+                "House": "2",
+                "Building": "3",
+                "ExtraMessage": "У нас в магазине можно купить сантехнику отечественного и зарубежного производства по доступным ценам. Мы сотрудничаем с 60 брендами из Италии, Франциии, России, Испании и других стран.",
+                "ContactEmail": "zakaz@santehmoll.ru",
+                "Ogrn": "1167746096484",
+            }]
         }
 
         body = self.create_Body(method, params)
-        return self.Send_Request(body, self.__serviceURL['vcard'])
+        return self.Send_Request(body, self.__serviceURL['vcard']) # Need correct return
+    
 
+    # Create set extension for ads (return: 'AdExtensionIds' for add_Ads())
+    def adExtension(self):
+        method = 'add'
 
-    # Delete Campaign by 'id'
-    def deleteCampaign(self, CampaignId):
-        method = 'delete'
         params = {
-                    'SelectionCriteria': { 'Ids': [CampaignId] }
-                 }
-        
+            "AdExtensions": [{
+                "Callout": {"CalloutText": "Кредит, Рассрочка"},
+                "Callout": {"CalloutText": "В Наличии"},
+                "Callout": {"CalloutText": "Бережная доставка"},
+                "Callout": {"CalloutText": "Поддержка 9:00-22:00"},
+            }]
+        }
+
         body = self.create_Body(method, params)
-        return self.Send_Request(body, self.__serviceURL['campaignsURL'])
+        return self.Send_Request(body, self.__serviceURL['adextensions'])
+    
+
+    # Create set fast links for ads (return: 'SitelinkSetId' for add_Ads()) 
+    def adSitelinks(self):
+        method = 'add'
+
+        params = {
+            "SitelinksSets": [{
+                "Sitelinks": [
+                    {"Title": "Каталог сантехники", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?ulp=https%3A%2F%2Fsantehmoll.ru%2Fcategory%2Fsantekhnika%2F", "Description": "Большой выбор сантехники. Скидки и подарки. Доставка по РФ",},
+                    {"Title": "Мебель для ванной", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?ulp=https%3A%2F%2Fsantehmoll.ru%2Fcategory%2Fmebel-dlya-vannoy%2F", "Description": "Каталог мебели для ванной комнаты. Скидки, уцененные товары",},
+                    {"Title": "Инженерная сантехника", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?ulp=https%3A%2F%2Fsantehmoll.ru%2Fcategory%2Finzhenernaja-santehnika%2F", "Description": "Широкий выбор труб, арматуры, фасонных частей",},
+                    {"Title": "Каталог скидок", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?ulp=https%3A%2F%2Fsantehmoll.ru%2Fdiscounts%2F", "Description": "Купить сантехнику со скидкой. Работаем с 2014 года",},
+                    {"Title": "Доставка", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?subid=3&ulp=https%3A%2F%2Fsantehmoll.ru%2Fdostavka-i-oplata%2F%3Fshipping%3Ddostavka", "Description": "Аккуратная доставка по России и Москве",},
+                    {"Title": "Сантехника в кредит", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?subid=3&ulp=https%3A%2F%2Fsantehmoll.ru%2Fsantekhnika-v-kredit%2F", "Description": "Купить сантехнику в кредит или рассрочку",},
+                    {"Title": "Гарантия", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?subid=3&ulp=https%3A%2F%2Fsantehmoll.ru%2Fpriem-i-vozvrat-tovara%2F", "Description": "Получения и возврат товара, гарантия, сервис",},
+                    {"Title": "Контакты", "Href": "https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?subid=3&ulp=https%3A%2F%2Fsantehmoll.ru%2Fkontakty%2F", "Description": "Организуем доставку заказа в любую точку России",},
+                    ]
+            }]
+        }
+
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['sitelinks'])
 
 
 # --- Getting information ---
@@ -164,10 +220,9 @@ class API_Requests:
         return "Region isn't found"
     
 
-    # TODO
+    # TODO Error "Not enough points" (https://yandex.ru/dev/direct/doc/examples-v5/python3-requests-points.html)
     def balance_Points(self):
         pass
-    
 
     # Count the groups in the campaign (input: compaign id, return: count groups)
     def GroupsCount(self, CampaignId):
