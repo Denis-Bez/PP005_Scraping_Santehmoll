@@ -3,7 +3,7 @@ import random
 import re
 import csv
 
-from user_agent import user_agent_data
+from Dictionary_User_agent import user_agent_data
 from Dictionary_shortName import titles_pattern, correct_shortName_utf8
 from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text
 
@@ -72,40 +72,13 @@ class Product:
             'suburl': self.Suburl(),
         }
 
-        for a in all_data:
-            if re.search(r'{Error!}', all_data[a]):
+        for a in self.all_data:
+            if re.search(r'{Error!}', self.all_data[a]):
                 self.addErrorToCSV()
                 return False
         
         return self.all_data
  
-
-    # Create Error log csv file for correction
-    def addErrorToCSV(self, needtosendsomething=0):
-        # if not self.__items: enter - "url don't work"
-
-        # Create table for 'Error log'. If table headers don't exist they will created
-        # !!!!Not good design. Think!
-        try:
-            with open('Log_Errors.csv', encoding='utf-8', newline='') as csvfile:
-                reader = csv.DictReader(csvfile, delimiter=';')
-            with open('Log_Errors.csv', 'a', newline='') as file:
-                table_value = []
-                writer = csv.writer(file, delimiter=';')
-                for i in self.all_data:
-                    table_value.append(self.all_data[i])
-                writer.writerow(table_value)
-        except:
-            with open('Log_Errors.csv', 'a', newline='') as file:
-                table_title = []
-                table_value = []
-                writer = csv.writer(file, delimiter=';')
-                for i in self.all_data:
-                    table_title.append(i)
-                    table_value.append(self.all_data[i])
-                writer.writerow(table_title)
-                writer.writerow(table_value)
-
 
 # --- Scraping data for create ads ---
     

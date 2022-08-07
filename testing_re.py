@@ -6,6 +6,8 @@ from Class_API_Yandex import API_Requests
 import time
 from Dictionary_shortName import titles_pattern
 from Dictionary_TextCorrecting import correct_Text
+from datetime import date
+import json
 
 
 # title = re.sub(r'\s*\b{}\b'.format(series), '', self.product['name'], re.IGNORECASE)
@@ -51,32 +53,11 @@ def repl():
 'suburl': '#Agger#'
 }
 
-    # code_text = RequestResult['error']['error_detail']
+
+    API_Req = API_Requests(adTexts)
+    response = API_Req.add_Compaign()
+    print(response)
     
-    # API_Req = API_Requests(adTexts)
-    # response = API_Req.balance_Points()
-    # print(response)
-
-    # a = "Don't get it"
-
-    # b = {
-    #     "Key1": {
-    #         "Key1-1": "Yep",
-    #     },
-    # }
-
-    # if re.search(r"Don't", a):
-    #     b["Key1"]["Key1-2"] = 'Two'
-
-
-    params = {"Keywords": []}
-    print(params)
-
-    params["Keywords"].append({"Keyword": "key", "AdGroupId": "adGroupId", "Bid": "10000000",})
-    params["Keywords"].append({"Keyword": "key", "AdGroupId": "adGroupId", "Bid": "100000ewrwr00",})
-
-    print(params)
-
             
 
     # i = 0 
