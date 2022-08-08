@@ -1,13 +1,12 @@
 import requests, json, re
 from config import CONFIG
 from datetime import date
-from Dictionary_TextForAPIYandex import Compaings_name, NegativeKeywords, SitelinkSetId, AdExtensionIds, vCardId
+from Dictionary_TextForAPIYandex import Compaings_name, NegativeKeywords, SitelinkSetId, AdExtensionIds, vCardid
 
 
-# !!! Need to create comfortable Dictionary with setting
+# --- Class for Yandex APIconnection and create ads ---
 class API_Requests:
-
-    
+ 
     def __init__(self, adTexts):
         self.__token = CONFIG['ACCESS_TOKEN']
         self.__headers = {
@@ -45,22 +44,34 @@ class API_Requests:
         return body
 
 
+    def delete_if_error(self, id, service):
+        method = 'delete'
+        params = {
+            "SelectionCriteria": {
+                "Ids":[id]
+            }
+        }
+
+        body = self.create_Body(method, params)
+        self.Send_Request(body, self.__serviceURL[service])
+
 # --- CREATE ADS ---
  
     # Create new Compaign. It's main method for create ads
-    # if error - deleted all chain
-    def add_Compaign(self):
+    def add_Compaign(self, last_ad):
         
-        # If current company already has 1000 Grours create new
-        # TODO Take last compaign's id from database
-        CampaignId = Compaings_name['SantehmollAPP_1']
-        vCardId = vCardId['SantehmollAPP_1']
-        if self.GroupsCount(Compaings_name['SantehmollAPP_1']) >= 1000:
+        # Get last ad's id from database
+        compaign_number = int(last_ad.compaign_number)
+        CampaignId = last_ad.CampaignId
+        vCardId = last_ad.vCardId
+
+        # If current company already has 1000 Grours create new company
+        if self.GroupsCount(CampaignId) >= 1000:
             startdate = date.today().isoformat()
             method = 'add'
             params = {
                         "Campaigns": [{
-                            "Name": "SantehmollAPP_1", # Need dinamyc Generate parametrs "SantehmollAPP_" + lastCompanyNumber + 1
+                            "Name": "SantehmollAPP_" + str(compaign_number),
                             "StartDate": startdate,
                             "DailyBudget":{
                                 "Amount": "300000000",
@@ -82,35 +93,61 @@ class API_Requests:
             try:
                 CampaignId = self.Send_Request(body, self.__serviceURL['campaignsURL'])
                 CampaignId = CampaignId['result']['AddResults'][0]['Id']
+                compaign_number += 1
                 # Creating 'vCard'
                 resultVCard = self.add_vCard(CampaignId)
                 if resultVCard:
                     vCardId = resultVCard['AddResults'][0]['Id']
                 else:
-                    return "Error! Fail to create vCard"                    
+                    print('Ошибка создания карточки. Удаляем новую компанию')
+                    self.delete_if_error(CampaignId, 'campaignsURL')
+                    return [False, "Error! Fail to create vCard"]
             except:
-                return f"Error! Fail to create new company {CampaignId}"
+                return [False, f"Error! Fail to create new company: {CampaignId}"]
         
         # Create Ad's Group
         try:
             AdGroupId = self.add_adGroup(CampaignId)
             AdGroupId = AdGroupId['result']['AddResults'][0]['Id']
         except:
-            return "Error! Fail to create new Ad's group"
+            # Checking If company has 0 groups
+            try:
+                self.GroupsCount(CampaignId)
+            except:
+                print('Ошибка создания группы. Удаляем компанию')
+                self.delete_if_error(CampaignId, 'campaignsURL')
+            return [False, "Error! Fail to create new Ad's group"]
 
         # Create Keywords
         try:
-            self.add_Keywords(AdGroupId)['result']['AddResults'][0]['Id']
+            KeywordsId = self.add_Keywords(AdGroupId)['result']['AddResults'][0]['Id']
         except:
-            return "Error! Fail to create new Ad's group"
+            print('Ошибка создания ключевых слов. Удаляем группу и компанию(если новая)')
+            self.delete_if_error(AdGroupId, 'adgroupsURL')
+            # Checking If company has 0 groups
+            try:
+                self.GroupsCount(CampaignId)
+            except:
+                self.delete_if_error(CampaignId, 'campaignsURL')
+            
+            return [False, "Error! Fail to create new Ad's group"]
         
         # Create Ad
         result = self.add_Ads(AdGroupId, vCardId)
+        ads_Id = result
         if not result[0]:
-            return f"Error! Fail to create new Ads: {result[1]}"
+            print(f'Error creating ads: {result[1]}. Deleting Keywords, group and compaign (if it new)')
+            self.delete_if_error(KeywordsId, 'keywords')
+            self.delete_if_error(AdGroupId, 'adgroupsURL')
+            # Checking If company has 0 groups
+            try:
+                self.GroupsCount(CampaignId)
+            except:
+                self.delete_if_error(CampaignId, 'campaignsURL')
+            return [False, f"Error! Fail to create new Ads: {result[1]}"]
 
-        # TODO If don't have errors send to moderation
-        return "Created!"
+        
+        return [CampaignId, vCardId, ads_Id, compaign_number]
 
 
     # Create new ad Group and ads in Group
@@ -131,6 +168,7 @@ class API_Requests:
 
     # Create new 3 ads (input: id adgroup)
     def add_Ads(self, groupId, vCardId):
+        add_created_id = []
         method = 'add'
         for i in range(0, 2):
             params = {
@@ -161,8 +199,11 @@ class API_Requests:
             body = self.create_Body(method, params)
             result = self.Send_Request(body, self.__serviceURL['Ads'])
             try:
-                result['result']['AddResults'][0]['Id']
+                add_created_id.append(result['result']['AddResults'][0]['Id'])
             except:
+                # Deleted ads if error
+                for id in add_created_id:
+                    self.delete_if_error(id, 'Ads')
                 return [False, result]
 
         # Creating mobile ad the some as second ad
@@ -170,11 +211,15 @@ class API_Requests:
         body = self.create_Body(method, params)
         result = self.Send_Request(body, self.__serviceURL['Ads'])
         try:
-            result['result']['AddResults'][0]['Id']
+            add_created_id.append(result['result']['AddResults'][0]['Id'])
         except:
+            # Deleted ads if error
+            for id in add_created_id:
+                self.delete_if_error(id, 'Ads')
             return [False, result]
         
-        return [True]
+        # Return list of Ads Ids
+        return add_created_id
 
 
     # Invite Keywords in ad's group (input: id adgroup)
@@ -217,7 +262,7 @@ class API_Requests:
 
         body = self.create_Body(method, params)
         result =  self.Send_Request(body, self.__serviceURL['vcard'])
-        print(result)
+
         return result.get('result', False)
     
 

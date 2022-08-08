@@ -1,7 +1,4 @@
-import time
-import random
-import re
-import csv
+import time, random, re
 
 from Dictionary_User_agent import user_agent_data
 from Dictionary_shortName import titles_pattern, correct_shortName_utf8
@@ -18,7 +15,7 @@ class Product:
     def __init__(self, product):
         self.product = product
         self.cleanurl = self.getCleanurl()
-        self.__items = self.getSoup()
+        self.items = self.getSoup(self.cleanurl)
         self.series = self.getSeries()
         self.shortName = self.getShortName()
         self.vendor = product['vendor']
@@ -32,11 +29,12 @@ class Product:
 
 
     # Getting 'html' and object 'soup' and checking link working and server response. Try 3 times open link
-    def getSoup(self):        
+    @staticmethod
+    def getSoup(cleanurl):        
         for i in range(1, 4):
             try:
                 headers = {'user-agent': random.choice(user_agent_data), 'accept': '*/*'}
-                html = requests.get(self.cleanurl, headers=headers)
+                html = requests.get(cleanurl, headers=headers)
                 if html.status_code == 200:
                     soup = BeautifulSoup(html.text, 'html.parser')
                     items = soup.find('div', class_='content')
@@ -62,7 +60,7 @@ class Product:
             'oldprice': self.getOldPrice(),
             'picture': self.product['picture'],
             'serie': self.series,
-            'avaible': self.getAvaible(),
+            'avaible': self.getAvaible(self.items),
 
             'groupName': self.nameAdGroup(),
             'keyPhrases': self.keyPhrases(),
@@ -73,19 +71,25 @@ class Product:
         }
 
         for a in self.all_data:
-            if re.search(r'{Error!}', self.all_data[a]):
-                self.addErrorToCSV()
-                return False
+            # TODO CRUTCH Need to thinking
+            try:
+                if re.search(r'{Error!}', self.all_data[a]):
+                    return [False, self.all_data]
+            except:
+                for i in a:
+                    if re.search(r'{Error!}', i):
+                        return [False, self.all_data]
         
-        return self.all_data
+        return [True, self.all_data]
  
 
 # --- Scraping data for create ads ---
     
     # Checking avaible of item (no optional)
-    def getAvaible(self):
+    @staticmethod
+    def getAvaible(items):
         try:
-            avaible = self.__items.find('div', class_='p-available').get_text(strip=True)
+            avaible = items.find('div', class_='p-available').get_text(strip=True)
         except Exception:
             avaible = "Error! Couldn't scraping avaible"
         return avaible
@@ -94,7 +98,7 @@ class Product:
     # Getting series of product (optional)
     def getSeries(self):
         try:
-            series = self.__items.find(itemprop='model').get_text(strip=True)
+            series = self.items.find(itemprop='model').get_text(strip=True)
             return series
         except Exception:
             return "Don't exist Series"
@@ -103,7 +107,7 @@ class Product:
     # Getting current product price (no optional)
     def getPrice(self):
         try:
-            price = self.__items.find(itemprop='price').get_text(strip=True)
+            price = self.items.find(itemprop='price').get_text(strip=True)
         except Exception:
             price = "Error! Don't reading 'price'"
         return self.getClear_price(price)
@@ -112,7 +116,7 @@ class Product:
     # Getting past product price (optional)
     def getOldPrice(self):
         try:
-            oldprice = self.__items.find('span', class_='p-price__compare-at-price').get_text(strip=True)
+            oldprice = self.items.find('span', class_='p-price__compare-at-price').get_text(strip=True)
             return self.getClear_price(oldprice)
         except Exception:
             return "Don't exist 'oldprice'"

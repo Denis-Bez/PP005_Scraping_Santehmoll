@@ -1,6 +1,6 @@
 
-Compaings_name = {'SantehmollAPP_1': '77124830'}
-vCardId = {'SantehmollAPP_1': '68015162'}
+Compaings_name = {'SantehmollAPP_1': '77127097'}
+vCardid = {'SantehmollAPP_1': '68015162'}
 
 # List of negative keywords for creating company
 NegativeKeywords = ['!или', '!как', '!кого', '!кто', '!ли', '!не', '!сантех', '!чего', '!чем', '!что', 'cfyntvjkk', 'com', 'kari', 'moll', 'ru', 'santeh', 
