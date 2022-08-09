@@ -1,7 +1,7 @@
-import requests, json, re
+import requests, json, re, time
 from config import CONFIG
 from datetime import date
-from Dictionary_TextForAPIYandex import Compaings_name, NegativeKeywords, SitelinkSetId, AdExtensionIds, vCardid
+from Dictionary_TextForAPIYandex import NegativeKeywords, SitelinkSetId, AdExtensionIds
 
 
 # --- Class for Yandex APIconnection and create ads ---
@@ -45,15 +45,106 @@ class API_Requests:
 
 
     def delete_if_error(self, id, service):
+        #TODO Mega-crutch. Detecting type of input 'id' (list or int?)
+        if type(id) == type(1):
+            ID = []
+            ID.append(id)
+            id = ID
+        
         method = 'delete'
         params = {
             "SelectionCriteria": {
-                "Ids":[id]
+                "Ids": id
             }
         }
 
         body = self.create_Body(method, params)
         self.Send_Request(body, self.__serviceURL[service])
+    
+
+    def Moderation_Send(self, Ads_Ids):
+        method = 'moderate'
+        params = {
+            "SelectionCriteria": {
+                "Ids": Ads_Ids
+            }
+        }
+
+        body = self.create_Body(method, params)
+        self.Send_Request(body, self.__serviceURL['Ads'])
+    
+
+    def Start_ads(self):
+        result = self.GetStatus_Ads()
+        if result['result']['Ads'][0]['StatusClarification'] == 'Архивно.':
+            method = 'unarchive'
+            params = {
+                "SelectionCriteria": {
+                    "Ids": eval(self.adTexts)    
+                }
+            }
+            body = self.create_Body(method, params)
+            self.Send_Request(body, self.__serviceURL['Ads'])
+            time.sleep(10)
+
+        method = 'resume'
+        params = {
+            "SelectionCriteria": {
+                "Ids": eval(self.adTexts)
+            }
+        }
+
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['Ads'])
+
+
+    def Stop_ads(self):
+        method = 'suspend'
+        params = {
+            "SelectionCriteria": {
+                "Ids": eval(self.adTexts)
+            }
+        }
+
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['Ads'])
+    
+
+    def Update_Price(self, new_Price):
+        Price_Update = []
+        diction = {}
+        for i in eval(self.adTexts):
+            diction['Id'] = i
+            diction['PriceExtension'] = {"Price": new_Price}
+            Price_Update.append(diction)
+
+        method = 'update'
+        params = {
+            "Ads": Price_Update
+        }
+
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['Ads'])
+    
+    def Update_OldPrice(self, new_oldPrice):
+        if re.search(r"Don't", self.adTexts['oldprice']):
+            new_oldPrice = 0
+        else: 
+            OldPrice_Update = []
+            diction = {}
+            for i in eval(self.adTexts):
+                diction['Id'] = i
+                diction['PriceExtension'] = {"OldPrice": new_oldPrice}
+                OldPrice_Update.append(diction)
+
+        method = 'update'
+        params = {
+            "Ads": OldPrice_Update
+        }
+
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['Ads'])
+
 
 # --- CREATE ADS ---
  
@@ -120,7 +211,11 @@ class API_Requests:
 
         # Create Keywords
         try:
-            KeywordsId = self.add_Keywords(AdGroupId)['result']['AddResults'][0]['Id']
+            result = self.add_Keywords(AdGroupId)['result']['AddResults']
+            KeywordsId = []
+            # Translate dictionsry of the Keyword Ids to list of Keyword Ids
+            for i in result:
+                KeywordsId.append(i['Id'])
         except:
             print('Ошибка создания ключевых слов. Удаляем группу и компанию(если новая)')
             self.delete_if_error(AdGroupId, 'adgroupsURL')
@@ -183,7 +278,7 @@ class API_Requests:
                         "DisplayUrlPath":self.adTexts['suburl'],
                         "VCardId": vCardId,
                         "SitelinkSetId": SitelinkSetId,
-                        "AdExtensionIds": [AdExtensionIds],
+                        "AdExtensionIds": AdExtensionIds,
                         "PriceExtension": {
                             "Price": int(self.adTexts['price'])*1000000,
                             "PriceQualifier": "NONE",
@@ -232,6 +327,7 @@ class API_Requests:
             params["Keywords"].append({"Keyword": key, "AdGroupId": adGroupId, "Bid": "10000000",})
         
         body = self.create_Body(method, params)
+
         return self.Send_Request(body, self.__serviceURL['keywords'])
 
 
@@ -266,7 +362,7 @@ class API_Requests:
         return result.get('result', False)
     
 
-    # Create set extension for ads (return: 'AdExtensionIds' for add_Ads()). Once for all company. Handly save in 'Dictionary_TextForAPIYandex'
+    # Create set extension for ads (return: 'AdExtensionIds' for add_Ads()). Once for all company. Handly saved in 'Dictionary_TextForAPIYandex'
     def adExtension(self):
         method = 'add'
 
@@ -345,6 +441,20 @@ class API_Requests:
         return len(result['result']['AdGroups'])
     
 
+    def GetStatus_Ads(self):
+        method = 'get'
+        params = {
+            "SelectionCriteria": {
+                "Ids": eval(self.adTexts)
+            },
+            "FieldNames": ["StatusClarification"]
+        }
+        
+        body = self.create_Body(method, params)
+        result = self.Send_Request(body, self.__serviceURL['Ads'])
+        return result
+    
+
     # Getting information about all company
     def getCampaigns(self):
         method = 'get'
@@ -355,3 +465,16 @@ class API_Requests:
         
         body = self.create_Body(method, params)
         return self.Send_Request(body, self.__serviceURL['campaignsURL'])
+    
+
+    # Gettig all extensions in accaunt (Id and Text)
+    def getExtensions(self):
+        method = 'get'
+        params = {
+            "SelectionCriteria": {},
+            "FieldNames": [("Id")],
+            "CalloutFieldNames": [( "CalloutText" )],
+        }
+
+        body = self.create_Body(method, params)
+        return self.Send_Request(body, self.__serviceURL['adextensions'])

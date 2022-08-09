@@ -14,7 +14,7 @@ import json
 adTexts = {
 'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Fagger_exact_a2121100_odnozakhvatnyy_smesitel_dlya_vanny_dusha_s_dlinnym_povorotnym_izlivom_350_mm_ker%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5',
 'clearurl': 'https://santehmoll.ru/product/agger_exact_a2121100_odnozakhvatnyy_smesitel_dlya_vanny_dusha_s_dlinnym_povorotnym_izlivom_350_mm_ker/',
-'name': 'Смеситель для ванны Agger Exact A2121100',
+'name': 'Верхний душ Hansgrohe Raindance E Air 1jet 400×400 мм, ½’ 26252000',
 'shortname': 'Смеситель для ванны',
 'id': '215841',
 'vendor': 'Agger',
@@ -38,9 +38,10 @@ def getType(a, b=0):
         
 
 def repl():
-    url = 'https://santehmoll.ru/product/puro_mod_696_190kh90_sm_v_o/'
-    s = Product.getSoup(url)
-    print(Product.getAvaible(s))
+    a = 'SE804601/E772401/6'
+
+    if True or re.search(r"SET", a) and len(re.findall(r'\w+', a)) < 3:
+        print('Working')
 
 
 

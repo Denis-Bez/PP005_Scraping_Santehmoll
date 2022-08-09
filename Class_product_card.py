@@ -56,8 +56,8 @@ class Product:
             'id': self.product['id'],
             'vendor': self.vendor,
             'vendorCode': self.product['vendorCode'],
-            'price': self.getPrice(),
-            'oldprice': self.getOldPrice(),
+            'price': self.getPrice(self.items),
+            'oldprice': self.getOldPrice(self.items),
             'picture': self.product['picture'],
             'serie': self.series,
             'avaible': self.getAvaible(self.items),
@@ -105,19 +105,28 @@ class Product:
 
 
     # Getting current product price (no optional)
-    def getPrice(self):
+    @staticmethod
+    def getPrice(items):
         try:
-            price = self.items.find(itemprop='price').get_text(strip=True)
-        except Exception:
+            price = items.find(itemprop='price').get_text(strip=True)
+            # Clean 'price' and 'oldprice' from ' ' and '₽'
+            for i in [' ', '₽']:
+                price = re.sub(i, '', price)
+        except:
             price = "Error! Don't reading 'price'"
-        return self.getClear_price(price)
+        
+        return price
 
 
     # Getting past product price (optional)
-    def getOldPrice(self):
+    @staticmethod
+    def getOldPrice(items):
         try:
-            oldprice = self.items.find('span', class_='p-price__compare-at-price').get_text(strip=True)
-            return self.getClear_price(oldprice)
+            oldprice = items.find('span', class_='p-price__compare-at-price').get_text(strip=True)
+            # Clean 'price' and 'oldprice' from ' ' and '₽'
+            for i in [' ', '₽']:
+                oldprice = re.sub(i, '', oldprice)
+            return oldprice
         except Exception:
             return "Don't exist 'oldprice'"
     
@@ -149,15 +158,7 @@ class Product:
                     result = re.sub(c, correct_shortName_utf8[c], result)
                 return result.capitalize()
 
-        return "Error! Product Is not found in 'Dictionary_shortName'"
-    
-
-    # Clean 'price' and 'oldprice' from ' ' and '₽'
-    def getClear_price(self, price):
-        for i in [' ', '₽']:
-            price = re.sub(i, '', price)
-        
-        return price
+        return "Error! Product Is not found in 'Dictionary_shortName'"  
 
 
 # --- Ad texts create and validation ---  
