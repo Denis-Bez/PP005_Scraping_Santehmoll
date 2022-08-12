@@ -38,11 +38,21 @@ def getType(a, b=0):
         
 
 def repl():
-    a = 'SE804601/E772401/6'
+    
+    a = 'SET/217005LN/FOCTEP70/700179'
+    # a = 'efefef'
 
-    if True or re.search(r"SET", a) and len(re.findall(r'\w+', a)) < 3:
-        print('Working')
+    if True:
+        if re.search(r"SET", a) and len(re.findall(r'\w+', a)) < 3:
+            print('Working')
+        else:
+            print('Not!')
+    else:
+        print('Not!')
 
+    #print(len(re.findall(r'\w+', a)))
+    # a = re.search(r"SET", a)
+    # print(a.group(0))
 
 
 if __name__ == "__main__":

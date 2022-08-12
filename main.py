@@ -50,34 +50,38 @@ def creatingNewAds(csv_file='all.csv'):
             # Checking available id in database
             if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
                 # Filtering Feed. Only if price >= 20000 and skipping SETs
-                if int(row['price'].replace('.00','')) >= 20000 or ( re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) < 3 ):
-                    scrapingProduct = Product(row)
-                    adTexts = scrapingProduct.DataForNewAd()
-                    if adTexts[0]:
-                        API_Req = API_Requests(adTexts[1])
-                        response = API_Req.add_Compaign(last_Ad)
-                        if response[0]:
-                            save_to_Databse(response, session, adTexts[1])
-                            print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
-                            # Sending to moderation TODO May be do it in method 'add_Compaign'?
-                            # try:
-                            #     API_Req.Moderation_Send(response[2])
-                            # except:
-                            #     print('Error sending group on moderation')
-                        else:
-                            addErrorToCSV(adTexts[1], response[1])
-                            print(f'Error API request: {response[1]}')
+                # TODO was error '1359.60', need use 're'
+                if int(row['price'].replace('.00','')) >= 20000:
+                    if re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) > 2:
+                        print(f"Product doesn't match (SET): Vendor Code: {row['vendorCode']}, Price: {row['price']}")
                     else:
-                        addErrorToCSV(adTexts[1])
-                        print('Error scraping data')
+                        scrapingProduct = Product(row)
+                        adTexts = scrapingProduct.DataForNewAd()
+                        if adTexts[0]:
+                            API_Req = API_Requests(adTexts[1])
+                            response = API_Req.add_Compaign(last_Ad)
+                            if response[0]:
+                                save_to_Databse(response, session, adTexts[1])
+                                print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
+                                # Sending to moderation TODO May be do it in method 'add_Compaign'?
+                                # try:
+                                #     API_Req.Moderation_Send(response[2])
+                                # except:
+                                #     print('Error sending group on moderation')
+                            else:
+                                addErrorToCSV(adTexts[1], response[1])
+                                print(f'Error API request: {response[1]}')
+                        else:
+                            addErrorToCSV(adTexts[1])
+                            print('Error scraping data')
                 else:
-                    print(f"Product doesn't match ('SET' or price): Vendor Code: {row['vendorCode']}, Price: {row['price']}")    
+                    print(f"Product doesn't match (Price): Vendor Code: {row['vendorCode']}, Price: {row['price']}")    
             else:
                 print(f"Product already exist: Id: {row['id']}, Name: {row['name']}")
 
 
 def errorsCorrection():
-    creatingNewAds('Log_Errors.csv')
+    creatingNewAds('Errors_Correct.csv')
 
 
 def checkAvaible():
@@ -175,7 +179,7 @@ def addErrorToCSV(error_data, error_API='None', Log_file = 'Log_Errors.csv'):
         # Will except if 'Log_Errors.csv' don't exist
         with open(Log_file, encoding='utf-8', newline='') as csvfile:
             csv.DictReader(csvfile, delimiter=';')
-        with open(Log_file, 'a', encoding='utf-8', newline='') as file:
+        with open(Log_file, 'a', newline='') as file:
             table_value = []
             writer = csv.writer(file, delimiter=';')
             for i in error_data:
@@ -183,7 +187,7 @@ def addErrorToCSV(error_data, error_API='None', Log_file = 'Log_Errors.csv'):
             table_value.append(error_API)
             writer.writerow(table_value)
     except:
-        with open(Log_file, 'a', newline='') as file:
+        with open(Log_file, 'a', encoding='utf-8', newline='') as file:
             table_title = []
             table_value = []
             writer = csv.writer(file, delimiter=';')
