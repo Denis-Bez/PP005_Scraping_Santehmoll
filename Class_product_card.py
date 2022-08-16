@@ -2,7 +2,7 @@ import time, random, re
 
 from Dictionary_User_agent import user_agent_data
 from Dictionary_shortName import titles_pattern, correct_shortName_utf8
-from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text
+from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text, correct_Serie
 
 import requests
 from bs4 import BeautifulSoup
@@ -19,10 +19,15 @@ class Product:
         self.series = self.getSeries()
         self.shortName = self.getShortName()
         self.vendor = product['vendor']
+        self.vendorCode = product['vendorCode']
 
         # Clear 'vendor' from prohibited simbols
         for v in correct_vendor:
             self.vendor = re.sub(v, correct_vendor[v], self.vendor)
+        
+        # vendorCode is being Cleaned from prohibited symbols
+        for v in correct_vendorCode:
+            self.vendorCode = re.sub(f'\{v}', correct_vendorCode[v], self.vendorCode)
 
 
 # --- Different methods ---
@@ -99,6 +104,9 @@ class Product:
     def getSeries(self):
         try:
             series = self.items.find(itemprop='model').get_text(strip=True)
+            # Deleting prohibited symbols from 'serie'
+            for s in correct_Serie:
+                series = re.sub(f'\{s}', correct_Serie[s], series)
             return series
         except Exception:
             return "Don't exist Series"
@@ -174,29 +182,23 @@ class Product:
 
     # Return a list of key phreses for the ad group
     def keyPhrases(self):
-        keyPhrases = []
-        vendorCode = self.product['vendorCode']
-
-        # vendorCode is being Cleaned from prohibited symbols
-        for v in correct_vendorCode:
-            vendorCode = re.sub(f'\{v}', correct_vendorCode[v], vendorCode)
-        
+        keyPhrases = []       
 
         # For phrase's algorithm 'Vendor + VendorCode'
-        keyPhrases.append(self.vendor + ' ' + vendorCode)
+        keyPhrases.append(self.vendor + ' ' + self.vendorCode)
         
-        # !It 'if' isn't good design. Need to thonk
+        # !It 'if' isn't good design. Need to think
 		# For phrase's algorithm 'VendorCode'. Checking length of VendorCode for a separate phrase
-        if (re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 5) or (
-            not re.findall('[a-zA-Zа-яА-я]', vendorCode) and len(vendorCode) > 7):
-            keyPhrases.append(vendorCode)
+        if (re.findall('[a-zA-Zа-яА-я]', self.vendorCode) and len(self.vendorCode) > 5) or (
+            not re.findall('[a-zA-Zа-яА-я]', self.vendorCode) and len(self.vendorCode) > 8):
+            keyPhrases.append(self.vendorCode)
             
         # For phrase's algorithm 'series + VendorCode' (if 'series' exist)
         if not re.search(r"Don't", self.series):
-            keyPhrases.append(self.series + ' ' + vendorCode)
+            keyPhrases.append(self.series + ' ' + self.vendorCode)
 
         # For phrase's algorithm  'shortName + vendorCode'
-        keyPhrases.append(self.shortName + ' ' + vendorCode)
+        keyPhrases.append(self.shortName + ' ' + self.vendorCode)
 
         # Cheking sum words in phrase
         for phrase in enumerate(keyPhrases):    
@@ -215,21 +217,21 @@ class Product:
         main_headers = []
 
         if re.search(r"Don't", self.series):
-            header1 = self.shortName + " " + self.product['vendorCode']
+            header1 = self.shortName + " " + self.vendorCode
             # Checking main_header length
             if len(header1) > 56:
                 return 'Error! Too long main_headers'
         else:
-            header1 = self.shortName + " " + self.series + " " + self.product['vendorCode']
+            header1 = self.shortName + " " + self.series + " " + self.vendorCode
             if len(header1) > 56:
-                header1 = self.shortName + " " + self.product['vendorCode']
+                header1 = self.shortName + " " + self.vendorCode
                 if len(header1) > 56:
                     return 'Error! Too long main_headers'
         
-        header2 = self.shortName + " " + self.product['vendor'] + " " + self.product['vendorCode']
+        header2 = self.shortName + " " + self.product['vendor'] + " " + self.vendorCode
         # Checking main_header length
         if len(header2) > 56:
-            header2 = self.shortName + " " + self.product['vendorCode']
+            header2 = self.shortName + " " + self.vendorCode
             if len(header2) > 56:
                 return 'Error! Too long main_headers'
         
@@ -248,9 +250,9 @@ class Product:
             product_name1 = re.sub(f'\{t}', correct_Text[t], product_name1)
         
         if re.search(r"Don't", self.series):
-            product_name2 = self.shortName + " " + self.vendor + " " + self.product['vendorCode']
+            product_name2 = self.shortName + " " + self.vendor + " " + self.vendorCode
         else:
-            product_name2 = self.shortName + " " + self.vendor + " " + self.series + " " + self.product['vendorCode']
+            product_name2 = self.shortName + " " + self.vendor + " " + self.series + " " + self.vendorCode
 
         ad_text.extend([product_name1, product_name2])
 

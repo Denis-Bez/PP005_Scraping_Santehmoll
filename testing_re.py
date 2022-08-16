@@ -39,20 +39,14 @@ def getType(a, b=0):
 
 def repl():
     
-    a = 'SET/217005LN/FOCTEP70/700179'
-    # a = 'efefef'
-
-    if True:
-        if re.search(r"SET", a) and len(re.findall(r'\w+', a)) < 3:
-            print('Working')
-        else:
-            print('Not!')
-    else:
-        print('Not!')
-
-    #print(len(re.findall(r'\w+', a)))
-    # a = re.search(r"SET", a)
-    # print(a.group(0))
+    response = {'result': {'AddResults': [{'Id': 40525178002}, {'Errors': [{'Code': 5002, 'Message': 'Используются недопустимые символы', 'Details': 'В тексте ключевых фраз разрешается использовать только буквы английского, турецкого, казахского, русского, украинского или белорусского алфавита, кавычки, знаки "-", "+", "!", пробел. Ошибка в ключевой фразе "Uno² 38115000"'}]}, {'Id': 40525178003}]}}
+    result = response['result']['AddResults']
+    KeywordsId = []
+            
+    for i in result:
+        print( list(i)[0] )
+    
+    #print(KeywordsId)
 
 
 if __name__ == "__main__":

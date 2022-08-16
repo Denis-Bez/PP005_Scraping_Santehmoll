@@ -47,37 +47,36 @@ def creatingNewAds(csv_file='all.csv'):
     with open(csv_file, encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
-            # Checking available id in database
-            if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
-                # Filtering Feed. Only if price >= 20000 and skipping SETs
-                # TODO was error '1359.60', need use 're'
-                if int(row['price'].replace('.00','')) >= 20000:
-                    if re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) > 2:
-                        print(f"Product doesn't match (SET): Vendor Code: {row['vendorCode']}, Price: {row['price']}")
-                    else:
-                        scrapingProduct = Product(row)
-                        adTexts = scrapingProduct.DataForNewAd()
-                        if adTexts[0]:
-                            API_Req = API_Requests(adTexts[1])
-                            response = API_Req.add_Compaign(last_Ad)
-                            if response[0]:
-                                save_to_Databse(response, session, adTexts[1])
-                                print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
-                                # Sending to moderation TODO May be do it in method 'add_Compaign'?
-                                # try:
-                                #     API_Req.Moderation_Send(response[2])
-                                # except:
-                                #     print('Error sending group on moderation')
-                            else:
-                                addErrorToCSV(adTexts[1], response[1])
-                                print(f'Error API request: {response[1]}')
+            if int(row['Number']) > 310 and int(row['Number']) < 510: # Temporarily because too many groups about 30 000 points for created 100 groups
+                # Checking available id in database
+                if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
+                    # Filtering Feed. Only if price >= 20000 and skipping SETs
+                    if int( re.search(r"^[0-9]*", row['price']).group(0) ) >= 20000: # Deleted from price number after the dot
+                        if re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) > 2:
+                            print(f"Product doesn't match (SET): Vendor Code: {row['vendorCode']}, Price: {row['price']}")
                         else:
-                            addErrorToCSV(adTexts[1])
-                            print('Error scraping data')
+                            scrapingProduct = Product(row)
+                            adTexts = scrapingProduct.DataForNewAd()
+                            if adTexts[0]:
+                                API_Req = API_Requests(adTexts[1])
+                                response = API_Req.add_Compaign(last_Ad)
+                                if response[0]:
+                                    save_to_Databse(response, session, adTexts[1])
+                                    print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
+                                    # Sending to moderation TODO May be do it in method 'add_Compaign'?
+                                    # try:
+                                    #     API_Req.Moderation_Send(response[2])
+                                    # except:
+                                    #     print('Error sending group on moderation')
+                                else:
+                                    addErrorToCSV(adTexts[1], response[1])
+                            else:
+                                addErrorToCSV(adTexts[1])
+                                print('Error scraping data')
+                    else:
+                        print(f"Product doesn't match (Price): Vendor Code: {row['vendorCode']}, Price: {row['price']}")    
                 else:
-                    print(f"Product doesn't match (Price): Vendor Code: {row['vendorCode']}, Price: {row['price']}")    
-            else:
-                print(f"Product already exist: Id: {row['id']}, Name: {row['name']}")
+                    print(f"Product already exist: Id: {row['id']}, Name: {row['name']}")
 
 
 def errorsCorrection():
@@ -131,8 +130,6 @@ def checkAvaible():
                     print(f'Available of product ID: {row.product_id} changed!')
         
             if int(check_data['new_price']) != int(check_data['old_price']):
-                print(type(check_data['new_price']))
-                print(type(check_data['old_price']))
                 API_Requests(check_data['Ads_Id']).Update_Price(check_data['new_price'])
                 row.price = check_data['new_price']
                 session.commit()
@@ -179,7 +176,7 @@ def addErrorToCSV(error_data, error_API='None', Log_file = 'Log_Errors.csv'):
         # Will except if 'Log_Errors.csv' don't exist
         with open(Log_file, encoding='utf-8', newline='') as csvfile:
             csv.DictReader(csvfile, delimiter=';')
-        with open(Log_file, 'a', newline='') as file:
+        with open(Log_file, 'a', encoding='utf-8', newline='') as file:
             table_value = []
             writer = csv.writer(file, delimiter=';')
             for i in error_data:
@@ -203,7 +200,7 @@ def addErrorToCSV(error_data, error_API='None', Log_file = 'Log_Errors.csv'):
 # --- START --
 if __name__ == "__main__":
     
-    print('\n1.Creating new ads\n2.Check avaible\n3.Errors Correction\n')
+    print('\n1.Creating new ads\n2.Check avaible\n3.Errors Correction (File name - "Errors_Correct.csv")\n')
     type_algorithm = input('Input script number that you want to do:')
     print(type_algorithm)
     if type_algorithm == '1':

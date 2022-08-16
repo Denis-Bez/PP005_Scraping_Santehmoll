@@ -125,7 +125,8 @@ class API_Requests:
 
         body = self.create_Body(method, params)
         return self.Send_Request(body, self.__serviceURL['Ads'])
-    
+
+
     def Update_OldPrice(self, new_oldPrice):
         if re.search(r"Don't", self.adTexts['oldprice']):
             new_oldPrice = 0
@@ -190,7 +191,7 @@ class API_Requests:
                 if resultVCard:
                     vCardId = resultVCard['AddResults'][0]['Id']
                 else:
-                    print('Ошибка создания карточки. Удаляем новую компанию')
+                    print("Error creating 'vCard'. Deleting new company")
                     self.delete_if_error(CampaignId, 'campaignsURL')
                     return [False, "Error! Fail to create vCard"]
             except:
@@ -210,14 +211,18 @@ class API_Requests:
             return [False, "Error! Fail to create new Ad's group"]
 
         # Create Keywords
-        try:
-            result = self.add_Keywords(AdGroupId)['result']['AddResults']
-            KeywordsId = []
-            # Translate dictionsry of the Keyword Ids to list of Keyword Ids
-            for i in result:
+        result = self.add_Keywords(AdGroupId)['result']['AddResults']
+        KeywordsId = []
+        check_errors = False
+        # Translate dictionsry of the Keyword Ids to list of Keyword Ids
+        for i in result:
+            if list(i)[0] == 'Id':
                 KeywordsId.append(i['Id'])
-        except:
-            print('Ошибка создания ключевых слов. Удаляем группу и компанию(если новая)')
+            else:
+                check_errors = True
+        if check_errors:
+            print('Error creating keywords. Deleting group, keywords (if exist) and company (if new)')
+            self.delete_if_error(KeywordsId, 'keywords')
             self.delete_if_error(AdGroupId, 'adgroupsURL')
             # Checking If company has 0 groups
             try:
@@ -225,7 +230,7 @@ class API_Requests:
             except:
                 self.delete_if_error(CampaignId, 'campaignsURL')
             
-            return [False, "Error! Fail to create new Ad's group"]
+            return [False, f"Error! Fail to create new Ad's group {result}"]
         
         # Create Ad
         result = self.add_Ads(AdGroupId, vCardId)
