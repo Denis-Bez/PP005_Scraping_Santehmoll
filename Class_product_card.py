@@ -2,7 +2,7 @@ import time, random, re
 
 from Dictionary_User_agent import user_agent_data
 from Dictionary_shortName import titles_pattern, correct_shortName_utf8
-from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text, correct_Serie
+from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text, correct_Serie, correct_Suburl
 
 import requests
 from bs4 import BeautifulSoup
@@ -270,9 +270,10 @@ class Product:
 
     # Create suburl
     def Suburl(self):
-        suburl = re.sub(' ', '-', self.vendor)
-        if len(suburl) > 20:
-            suburl = 'В-Наличии'
+        for s in correct_Suburl:
+            self.vendor = re.sub(f'\{s}', correct_Suburl[s], self.vendor)
+        if len(self.vendor) > 20:
+            self.vendor = 'В-Наличии'
 
-        return '#' + suburl + '#'
+        return '#' + self.vendor + '#'
 
