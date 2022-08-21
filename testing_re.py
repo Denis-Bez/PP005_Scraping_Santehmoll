@@ -39,14 +39,18 @@ def getType(a, b=0):
 
 def repl():
     
-    response = {'result': {'AddResults': [{'Id': 40525178002}, {'Errors': [{'Code': 5002, 'Message': 'Используются недопустимые символы', 'Details': 'В тексте ключевых фраз разрешается использовать только буквы английского, турецкого, казахского, русского, украинского или белорусского алфавита, кавычки, знаки "-", "+", "!", пробел. Ошибка в ключевой фразе "Uno² 38115000"'}]}, {'Id': 40525178003}]}}
-    result = response['result']['AddResults']
-    KeywordsId = []
-            
-    for i in result:
-        print( list(i)[0] )
+    adTexts = '[135463, 2313, 12313]'
+
+    OldPrice_Update = []
     
-    #print(KeywordsId)
+    for i in eval(adTexts):
+                diction = {}
+                diction['Id'] = i
+                diction['TextAd'] = {'PriceExtension': {'OldPrice': 0}}
+                OldPrice_Update.append(diction)
+    
+    print(OldPrice_Update)
+
 
 
 if __name__ == "__main__":

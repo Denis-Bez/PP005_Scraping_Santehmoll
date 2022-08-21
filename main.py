@@ -47,7 +47,7 @@ def creatingNewAds(csv_file='all.csv'):
     with open(csv_file, encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
-            if int(row['Number']) > 810 and int(row['Number']) < 910: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) > 910 and int(row['Number']) < 1110: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Checking available id in database
                 if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
                     # Filtering Feed. Only if price >= 20000 and skipping SETs
@@ -118,16 +118,17 @@ def checkAvaible():
         if not Error:
             if check_data['new_avaible'] != check_data['old_avaible']:
                 row.time = datetime.utcnow()
-                session.commit()
+                session.commit() # TODO May be deleted this row?
                 if check_data['new_avaible'] == 'В наличии':
                     API_Requests(check_data['Ads_Id']).Start_ads()
                     row.avaible = 'В наличии'
                     session.commit()
+                    print(f'Available of product ID: {row.product_id} was changed!(Was Started)')
                 else:
                     API_Requests(check_data['Ads_Id']).Stop_ads()
                     row.avaible = check_data['new_avaible']
                     session.commit()
-                    print(f'Available of product ID: {row.product_id} changed!')
+                    print(f'Available of product ID: {row.product_id} was changed!(Was Stopped)')
         
             if int(check_data['new_price']) != int(check_data['old_price']):
                 API_Requests(check_data['Ads_Id']).Update_Price(check_data['new_price'])

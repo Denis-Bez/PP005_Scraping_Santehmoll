@@ -112,10 +112,10 @@ class API_Requests:
 
     def Update_Price(self, new_Price):
         Price_Update = []
-        diction = {}
         for i in eval(self.adTexts):
+            diction = {}
             diction['Id'] = i
-            diction['PriceExtension'] = {"Price": new_Price}
+            diction['TextAd'] = {'PriceExtension': {'Price': int(new_Price)*1000000}}
             Price_Update.append(diction)
 
         method = 'update'
@@ -128,15 +128,15 @@ class API_Requests:
 
 
     def Update_OldPrice(self, new_oldPrice):
-        if re.search(r"Don't", self.adTexts['oldprice']):
+        if re.search(r"Don't", new_oldPrice):
             new_oldPrice = 0
-        else: 
-            OldPrice_Update = []
+         
+        OldPrice_Update = []
+        for i in eval(self.adTexts):
             diction = {}
-            for i in eval(self.adTexts):
-                diction['Id'] = i
-                diction['PriceExtension'] = {"OldPrice": new_oldPrice}
-                OldPrice_Update.append(diction)
+            diction['Id'] = i
+            diction['TextAd'] = {'PriceExtension': {'OldPrice': int(new_oldPrice)*1000000}}
+            OldPrice_Update.append(diction)
 
         method = 'update'
         params = {
