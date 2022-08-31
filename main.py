@@ -47,7 +47,7 @@ def creatingNewAds(csv_file='all.csv'):
     with open(csv_file, encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
-            if int(row['Number']) > 910 and int(row['Number']) < 1110: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 1110 and int(row['Number']) < 1155: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Checking available id in database
                 if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
                     # Filtering Feed. Only if price >= 20000 and skipping SETs

@@ -38,19 +38,26 @@ def getType(a, b=0):
         
 
 def repl():
-    
-    adTexts = '[135463, 2313, 12313]'
+    all_data = {'url': 'https://ad.admitad.com/g/dra8qamlvk037e654884d22e56a5b7/?f_id=18282&ulp=https%3A%2F%2Fsantehmoll.ru%2Fproduct%2Frgw_pa_36_b_pa_06b_z_050_2b_derzh_13%2F%3Futm_source%3Dadmitad%26utm_medium%3Dpartner-network&i=5', 'clearurl': 'https://santehmoll.ru/product/rgw_pa_36_b_pa_06b_z_050_2b_derzh_13/', 
+    'name': 'Душевой уголок 80х70 см RGW PA-36-B (PA-06B+Z-050-2B+держатель) Passage 41083687-014 прозрачное', 'shortname': 'Душевой уголок', 'id': '103478899999', 
+    'vendor': 'RGW', 'vendorCode': '41083687-014', 'price': '31443', 'oldprice': "Don't exist 'oldprice'", 
+    'picture': 'https://santehmoll.ru/wa-data/public/shop/products/88/47/1034788/images/672844/672844.970.jpg', 'serie': 'Passage', 'avaible': 'Под заказ', 
+    'groupName': '_103478899999_Душевой уголок 80х70 см RGW PA-36-B (PA-06B+Z-050-2B+держатель) Passage 41083687-014 прозрачное', 
+    'keyPhrases': ['RGW 41083687-014', '41083687-014', 'Passage 41083687-014', 'Душевой уголок 41083687-014'], 
+    'mainTitle': ['Душевой уголок Passage 41083687-014', 'Душевой уголок RGW 41083687-014'], 
+    'subTitle': 'Error', 
+    'text': "Error! Ad's text is too long", 'suburl': '#RGW#'}
 
-    OldPrice_Update = []
-    
-    for i in eval(adTexts):
-                diction = {}
-                diction['Id'] = i
-                diction['TextAd'] = {'PriceExtension': {'OldPrice': 0}}
-                OldPrice_Update.append(diction)
-    
-    print(OldPrice_Update)
-
+    for key in all_data:
+        try:
+            if re.search(r'Error', all_data[key]):
+                print(f'Try 1 Was work! {all_data[key]}')
+        except:
+            for i in all_data[key]:
+                print(i)
+                if re.search(r'Error', i):
+                    print(f'Except Was work! {i}')
+        
 
 
 if __name__ == "__main__":

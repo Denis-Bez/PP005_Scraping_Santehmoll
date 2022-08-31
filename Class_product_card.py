@@ -75,14 +75,15 @@ class Product:
             'suburl': self.Suburl(),
         }
 
-        for a in self.all_data:
+
+        for key in self.all_data:
             # TODO CRUTCH Need to thinking
             try:
-                if re.search(r'{Error!}', self.all_data[a]):
+                if re.search(r'Error', self.all_data[key]):
                     return [False, self.all_data]
             except:
-                for i in a:
-                    if re.search(r'{Error!}', i):
+                for i in self.all_data[key]:
+                    if re.search(r'Error', i):
                         return [False, self.all_data]
         
         return [True, self.all_data]
