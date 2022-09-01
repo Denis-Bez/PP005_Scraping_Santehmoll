@@ -163,7 +163,7 @@ class API_Requests:
             method = 'add'
             params = {
                         "Campaigns": [{
-                            "Name": "SantehmollAPP_" + str(compaign_number),
+                            "Name": "SantehmollAPP_" + str(compaign_number + 1),
                             "StartDate": startdate,
                             "DailyBudget":{
                                 "Amount": "300000000",

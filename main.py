@@ -39,44 +39,45 @@ class Groups_Ads(Base):
 # --- MAIN PROGRAMM SCRIPTS ---
 def creatingNewAds(csv_file='all.csv'):
     
-    session = Session(engine)  
-    # Exctrction last ad's date from database
-    last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.time.desc()).first()
-    
     # Reading csv feed
     with open(csv_file, encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
-            if int(row['Number']) >= 1110 and int(row['Number']) < 1155: # Temporarily because too many groups about 30 000 points for created 100 groups
-                # Checking available id in database
-                if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
-                    # Filtering Feed. Only if price >= 20000 and skipping SETs
-                    if int( re.search(r"^[0-9]*", row['price']).group(0) ) >= 20000: # Deleted from price number after the dot
-                        if re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) > 2:
-                            print(f"Product doesn't match (SET): Vendor Code: {row['vendorCode']}, Price: {row['price']}")
-                        else:
-                            scrapingProduct = Product(row)
-                            adTexts = scrapingProduct.DataForNewAd()
-                            if adTexts[0]:
-                                API_Req = API_Requests(adTexts[1])
-                                response = API_Req.add_Compaign(last_Ad)
-                                if response[0]:
-                                    save_to_Databse(response, session, adTexts[1])
-                                    print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
-                                    # Sending to moderation TODO May be do it in method 'add_Compaign'?
-                                    # try:
-                                    #     API_Req.Moderation_Send(response[2])
-                                    # except:
-                                    #     print('Error sending group on moderation')
-                                else:
-                                    addErrorToCSV(adTexts[1], response[1])
+
+            if int(row['Number']) >= 1305 and int(row['Number']) < 1310: # Temporarily because too many groups about 30 000 points for created 100 groups
+                # Exctrction last ad's data from database
+                with Session(engine) as session:
+                    last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
+                    
+                    # Checking available id in database
+                    if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
+                        # Filtering Feed. Only if price >= 20000 and skipping SETs
+                        if int( re.search(r"^[0-9]*", row['price']).group(0) ) >= 40000: # Deleted from price number after the dot
+                            if re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) > 2:
+                                print(f"Product doesn't match (SET): Vendor Code: {row['vendorCode']}, Price: {row['price']}")
                             else:
-                                addErrorToCSV(adTexts[1])
-                                print('Error scraping data')
+                                scrapingProduct = Product(row)
+                                adTexts = scrapingProduct.DataForNewAd()
+                                if adTexts[0]:
+                                    API_Req = API_Requests(adTexts[1])
+                                    response = API_Req.add_Compaign(last_Ad)
+                                    if response[0]:
+                                        save_to_Databse(response, session, adTexts[1])
+                                        print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
+                                        # Sending to moderation TODO May be do it in method 'add_Compaign'?
+                                        # try:
+                                        #     API_Req.Moderation_Send(response[2])
+                                        # except:
+                                        #     print('Error sending group on moderation')
+                                    else:
+                                        addErrorToCSV(adTexts[1], response[1])
+                                else:
+                                    addErrorToCSV(adTexts[1])
+                                    print('Error scraping data')
+                        else:
+                            print(f"Product doesn't match (Price): Vendor Code: {row['vendorCode']}, Price: {row['price']}")    
                     else:
-                        print(f"Product doesn't match (Price): Vendor Code: {row['vendorCode']}, Price: {row['price']}")    
-                else:
-                    print(f"Product already exist: Id: {row['id']}, Name: {row['name']}")
+                        print(f"Product already exist: Id: {row['id']}, Name: {row['name']}")
 
 
 def errorsCorrection():
