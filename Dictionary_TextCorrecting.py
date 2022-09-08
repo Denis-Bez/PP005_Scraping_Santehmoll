@@ -59,6 +59,9 @@ correct_Text = {
 correct_Serie = {
     "²":"",
     "/":"-",
+    "°":"",
+    "&":" ",
+    "+":"",
 }
 
 correct_Suburl ={

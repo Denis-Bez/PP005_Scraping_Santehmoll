@@ -44,7 +44,7 @@ def creatingNewAds(csv_file='all.csv'):
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
 
-            if int(row['Number']) >= 1500 and int(row['Number']) < 1700: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 4000 and int(row['Number']) < 5000: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Exctrction last ad's data from database
                 with Session(engine) as session:
                     last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
