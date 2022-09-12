@@ -44,7 +44,7 @@ def creatingNewAds(csv_file='all.csv'):
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
 
-            if int(row['Number']) >= 4000 and int(row['Number']) < 5000: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 11000 and int(row['Number']) < 12000: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Exctrction last ad's data from database
                 with Session(engine) as session:
                     last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
@@ -52,7 +52,7 @@ def creatingNewAds(csv_file='all.csv'):
                     # Checking available id in database
                     if not session.query(Groups_Ads).filter(Groups_Ads.product_id==int(row['id'])).all():
                         # Filtering Feed. Only if price >= 40000 and skipping SETs
-                        if int( re.search(r"^[0-9]*", row['price']).group(0) ) >= 40000: # Deleted from price number after the dot
+                        if int( re.search(r"^[0-9]*", row['price']).group(0) ) >= 60000: # Deleted from price number after the dot
                             if re.search(r"SET", row['vendorCode']) and len(re.findall(r'\w+', row['vendorCode'])) > 2:
                                 print(f"Product doesn't match (SET): Vendor Code: {row['vendorCode']}, Price: {row['price']}")
                             else:
@@ -89,6 +89,9 @@ def errorsCorrection():
 
 
 def checkAvaible():
+    check = 0
+    error = 0
+    change = 0
 
     # sorting database on 'update_date' and start loop of checking
     session = Session(engine)
@@ -97,6 +100,7 @@ def checkAvaible():
     
     # Getting clearurl, Ads_Id, avaible, price, old price from database
     for row in check_rows:
+        check += 1
         check_data = {}
         Error = False
 
@@ -116,6 +120,7 @@ def checkAvaible():
         for date in check_data:
             if re.search(r'{Error!}', date):
                 addErrorToCSV(check_data, 'None', 'Log_Errors_Avaible.csv')
+                error += 1
                 Error = True
                 print('Error of scrapping!')
                 break
@@ -128,29 +133,34 @@ def checkAvaible():
                     API_Requests(check_data['Ads_Id']).Start_ads()
                     row.avaible = 'В наличии'
                     session.commit()
-                    print(f'Available of product ID: {row.product_id} was changed!(Was Started)')
+                    change += 1
+                    print(f'Checked: {check}. Available of product ID: {row.product_id} was changed!(Was Started). Count of the changes: {change}')
                 else:
                     API_Requests(check_data['Ads_Id']).Stop_ads()
                     row.avaible = check_data['new_avaible']
                     session.commit()
-                    print(f'Available of product ID: {row.product_id} was changed!(Was Stopped)')
+                    change += 1
+                    print(f'Checked: {check}. Available of product ID: {row.product_id} was changed!(Was Stopped). Count of the changes: {change}')
         
             if int(check_data['new_price']) != int(check_data['old_price']):
                 API_Requests(check_data['Ads_Id']).Update_Price(check_data['new_price'])
                 row.price = check_data['new_price']
                 session.commit()
-                print(f'Price of product ID: {row.product_id} changed!')
+                change += 1
+                print(f'Checked: {check}. Price of product ID: {row.product_id} changed! Count of the changes: {change}')
 
             if check_data['new_oldprice'] != check_data['old_oldprice']:
                 API_Requests(check_data['Ads_Id']).Update_OldPrice(check_data['new_oldprice'])
                 row.old_price = check_data['new_oldprice']
                 session.commit()
-                print(f'Old price of product ID: {row.product_id} changed!')
+                change += 1
+                print(f'Checked: {check}. Old price of product ID: {row.product_id} changed! Count of the changes: {change}')
                 
         
             row.update_date = datetime.utcnow()
             session.commit()
-            print(f'Product Id: {row.product_id} checked!')
+    
+    print(f"Finish! Checked positions: {check}, Changes: {change}, Errors: {error}")
 
 
 # --- OTHER FUNCTIONS ---
