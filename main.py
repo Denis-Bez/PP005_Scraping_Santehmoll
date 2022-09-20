@@ -44,7 +44,7 @@ def creatingNewAds(csv_file='all.csv'):
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
 
-            if int(row['Number']) >= 13000 and int(row['Number']) < 14000: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 17000 and int(row['Number']) < 18000: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Exctrction last ad's data from database
                 with Session(engine) as session:
                     last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
@@ -101,6 +101,7 @@ def checkAvaible():
     # Getting clearurl, Ads_Id, avaible, price, old price from database
     for row in check_rows:
         check += 1
+        print(f"Checking {check}, id: {row.product_id}")
         check_data = {}
         Error = False
 
