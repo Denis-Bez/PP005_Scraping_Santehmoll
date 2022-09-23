@@ -44,7 +44,7 @@ def creatingNewAds(csv_file='all.csv'):
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
 
-            if int(row['Number']) >= 17000 and int(row['Number']) < 18000: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 22000 and int(row['Number']) < 23000: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Exctrction last ad's data from database
                 with Session(engine) as session:
                     last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
@@ -68,7 +68,7 @@ def creatingNewAds(csv_file='all.csv'):
                                             print(f'Successfully create company: {row["name"]} Id: {row["id"]}')
                                             # Sending to moderation TODO May be do it in method 'add_Compaign'?
                                             # try:
-                                            #     API_Req.Moderation_Send(response[2])
+                                            #     API_Req.Moderation_Send(response[2]) # Why 2?
                                             # except:
                                             #     print('Error sending group on moderation')
                                         else:
