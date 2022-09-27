@@ -39,11 +39,13 @@ def getType(a, b=0):
 
 def repl():
 
-    a = 'https://santehmoll.ru/product/allure_izliv_dlya_vanny_napolnyy_montazh_komplekt_verkhney_montazhnoy_chasti_dlya_45_984_000_13218000_/'
-    # a = 'https://santehmoll.ru/product/27352400-hansgrohe-croma-select-e-180-2jet-dushevaya-sistema/'
-    item = Product.getSoup(a)
-    b = Product.getPrice(item)
-    print(f"-{int(b)}-")
+    a = ["Error! Don't reading 'price'", "Error! Couldn't scraping avaible"]
+    Error = False
+
+    for i in a:
+        if re.search(r'Error!', i):
+            Error = True
+            print('Error of scrapping!')
         
 
 

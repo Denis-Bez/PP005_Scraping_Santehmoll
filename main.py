@@ -3,7 +3,7 @@
 import csv, re
 from datetime import datetime
 
-from sqlalchemy import  create_engine, select, update
+from sqlalchemy import create_engine, select, update
 from sqlalchemy import Column, Integer, String, DATETIME
 from sqlalchemy.orm import declarative_base, Session
 
@@ -44,7 +44,7 @@ def creatingNewAds(csv_file='all.csv'):
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
 
-            if int(row['Number']) >= 22000 and int(row['Number']) < 23000: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 30000 and int(row['Number']) < 31000: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Exctrction last ad's data from database
                 with Session(engine) as session:
                     last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
@@ -101,7 +101,7 @@ def checkAvaible():
     # Getting clearurl, Ads_Id, avaible, price, old price from database
     for row in check_rows:
         check += 1
-        print(f"Checking {check}, id: {row.product_id}")
+        # print(f"Checking {check}, id: {row.product_id}")
         check_data = {}
         Error = False
 
@@ -118,8 +118,8 @@ def checkAvaible():
         check_data['new_oldprice'] = Product.getOldPrice(items)
 
         # Check for errors. If error created 'Log_Errors_Avaible.csv'
-        for date in check_data:
-            if re.search(r'{Error!}', date):
+        for data in check_data:
+            if re.search(r'Error!', data):
                 addErrorToCSV(check_data, 'None', 'Log_Errors_Avaible.csv')
                 error += 1
                 Error = True
