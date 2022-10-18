@@ -7,8 +7,8 @@ from sqlalchemy import create_engine, select, update
 from sqlalchemy import Column, Integer, String, DATETIME
 from sqlalchemy.orm import declarative_base, Session
 
-from Class_API_Yandex import API_Requests
-from Class_product_card import Product
+from .Class_API_Yandex import API_Requests
+from .Class_product_card import Product
 
 
 engine = create_engine('sqlite:///DB_Santehmoll_scraping.db', future=True)
@@ -162,6 +162,7 @@ def checkAvaible():
             session.commit()
     
     print(f"Finish! Checked positions: {check}, Changes: {change}, Errors: {error}")
+    return f"Finish! Checked positions: {check}, Changes: {change}, Errors: {error}"
 
 
 # --- OTHER FUNCTIONS ---

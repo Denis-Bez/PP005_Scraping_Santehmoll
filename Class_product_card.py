@@ -1,8 +1,8 @@
 import time, random, re
 
-from Dictionary_User_agent import user_agent_data
-from Dictionary_shortName import titles_pattern, correct_shortName_utf8
-from Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text, correct_Serie, correct_Suburl
+from .Dictionary_User_agent import user_agent_data
+from .Dictionary_shortName import titles_pattern, correct_shortName_utf8
+from .Dictionary_TextCorrecting import cleaning_url, correct_vendor, correct_vendorCode, correct_Text, correct_Serie, correct_Suburl
 
 import requests
 from bs4 import BeautifulSoup
