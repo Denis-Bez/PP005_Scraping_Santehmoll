@@ -35,6 +35,11 @@ class Groups_Ads(Base):
     def __repr__(self):
          return f"Group_Ads(id={self.id!r}, name={self.name!r}, product_id={self.product_id!r})"
 
+    def Get_last_data_update():
+        with Session(engine) as  session:
+            last_data = session.query(Groups_Ads).order_by(Groups_Ads.update_date).first()
+        return last_data.update_date
+
 
 # --- MAIN PROGRAMM SCRIPTS ---
 def creatingNewAds(csv_file='all.csv'):
