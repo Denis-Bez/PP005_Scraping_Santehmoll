@@ -1,7 +1,7 @@
 import requests, json, re, time
-from .config import CONFIG
+from config import CONFIG
 from datetime import date
-from .Dictionary_TextForAPIYandex import NegativeKeywords, SitelinkSetId, AdExtensionIds
+from Dictionary_TextForAPIYandex import NegativeKeywords, SitelinkSetId, AdExtensionIds
 
 
 # --- Class for Yandex APIconnection and create ads ---

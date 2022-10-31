@@ -7,8 +7,8 @@ from sqlalchemy import create_engine, select, update
 from sqlalchemy import Column, Integer, String, DATETIME
 from sqlalchemy.orm import declarative_base, Session
 
-from .Class_API_Yandex import API_Requests
-from .Class_product_card import Product
+from Class_API_Yandex import API_Requests
+from Class_product_card import Product
 
 
 engine = create_engine('sqlite:///DB_Santehmoll_scraping.db', future=True)
@@ -49,7 +49,7 @@ def creatingNewAds(csv_file='all.csv'):
         reader = csv.DictReader(csvfile, delimiter=';')
         for row in reader:
 
-            if int(row['Number']) >= 46000 and int(row['Number']) < 47000: # Temporarily because too many groups about 30 000 points for created 100 groups
+            if int(row['Number']) >= 0 and int(row['Number']) < 2000: # Temporarily because too many groups about 30 000 points for created 100 groups
                 # Exctrction last ad's data from database
                 with Session(engine) as session:
                     last_Ad = session.query(Groups_Ads).order_by(Groups_Ads.id.desc()).first()
@@ -222,7 +222,6 @@ def addErrorToCSV(error_data, error_API='None', Log_file = 'Log_Errors.csv'):
 
 # --- START --
 if __name__ == "__main__":
-    
     print('\n1.Creating new ads\n2.Check avaible\n3.Errors Correction (File name - "Errors_Correct.csv")\n')
     type_algorithm = input('Input script number that you want to do:')
     print(type_algorithm)
