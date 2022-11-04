@@ -483,3 +483,21 @@ class API_Requests:
 
         body = self.create_Body(method, params)
         return self.Send_Request(body, self.__serviceURL['adextensions'])
+
+# --- GETTING INFORMATION --- 
+
+    def GetStatus_Ads(self, ads_id):
+        method = 'get'
+        params = {
+            "SelectionCriteria": {
+                "Ids": eval(ads_id)
+            },
+            "FieldNames": ["StatusClarification"]
+        }   
+        body = self.create_Body(method, params)
+        result = self.Send_Request(body, self.__serviceURL['Ads'])       
+        try:
+            result = result['result']['Ads'][0]['StatusClarification']
+            return [True, result]
+        except:
+            return [False, f"Error! Don't got ad's Status {result}"]

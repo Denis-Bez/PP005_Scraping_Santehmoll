@@ -39,6 +39,10 @@ class Groups_Ads(Base):
         with Session(engine) as  session:
             last_data = session.query(Groups_Ads).order_by(Groups_Ads.update_date).first()
         return last_data.update_date
+    
+    def Scrap_current_data():
+        with Session(engine) as session:
+            return session.query(Groups_Ads).order_by(Groups_Ads.id)
 
 
 # --- MAIN PROGRAMM SCRIPTS ---
